@@ -27,7 +27,9 @@ export default function AppLayout({ children, title }) {
     }
   }, [user, isAuthLoading, location.pathname, navigate]);
 
-  if (isAuthLoading) {
+  const isPublic = ["/", "/login"].includes(location.pathname);
+
+  if (isAuthLoading && !isPublic) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-950">
         <div className="relative flex items-center justify-center w-16 h-16">
@@ -41,8 +43,12 @@ export default function AppLayout({ children, title }) {
     );
   }
 
+  // Prevent flashing layout content for unauthenticated users accessing protected routes
+  if (!user && !isPublic) {
+    return null;
+  }
+
   // Render children directly if in public path and no user logged in
-  const isPublic = ["/", "/login"].includes(location.pathname);
   if (isPublic && !user) {
     return <>{children}</>;
   }

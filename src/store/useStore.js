@@ -434,13 +434,13 @@ export const useStore = create((set, get) => ({
     if (!user) return;
 
     const newTimetable = {
-      id: generateId(),
+      id: timetableData.id || generateId(),
       userId: user.uid,
       subjects: timetableData.subjects,
       examDates: timetableData.examDates,
       dailyHours: timetableData.dailyHours,
       schedule: timetableData.schedule,
-      createdAt: new Date().toISOString(),
+      createdAt: timetableData.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
 
