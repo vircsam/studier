@@ -6,7 +6,7 @@ export default function Navbar({ onOpenSidebar, pageTitle }) {
   const { isMockMode } = useStore();
 
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-6 border-b border-sky-100/70 dark:border-sky-900/20 bg-white/55 dark:bg-slate-950/55 backdrop-blur-xl shadow-[0_10px_30px_rgba(15,23,42,0.04)] dark:shadow-none">
+    <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-6 border-b border-sky-100/70 dark:border-sky-900/20 dark:bg-slate-950/55 backdrop-blur-xl shadow-[0_10px_30px_rgba(15,23,42,0.04)] dark:shadow-none">
       <div className="flex items-center gap-3">
         <button
           onClick={onOpenSidebar}
@@ -14,9 +14,6 @@ export default function Navbar({ onOpenSidebar, pageTitle }) {
         >
           <Menu className="w-5 h-5" />
         </button>
-        <div className="flex items-center justify-center w-10 h-10 rounded-2xl bg-white/80 dark:bg-slate-900/70 border border-sky-100/80 dark:border-sky-900/30 shadow-[0_10px_24px_rgba(56,189,248,0.08)]">
-          <img src="/logo.png" alt="Studier logo" className="w-7 h-7 object-contain" />
-        </div>
         <h1 className="text-lg font-bold text-slate-800 dark:text-slate-100">
           {pageTitle}
         </h1>

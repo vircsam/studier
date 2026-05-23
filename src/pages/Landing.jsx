@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Sparkles, Brain, Clock, Calendar, BarChart3, ChevronRight, GraduationCap } from "lucide-react";
+import { Brain, Clock, Calendar, BarChart3, ChevronRight, GraduationCap } from "lucide-react";
 
 export default function Landing() {
   const containerVariants = {
@@ -42,8 +42,8 @@ export default function Landing() {
       {/* Navbar Header */}
       <header className="sticky top-0 z-50 flex items-center justify-between h-20 px-6 max-w-7xl mx-auto backdrop-blur-xl border-b border-white/10 bg-slate-950/35">
         <div className="flex items-center gap-2">
-          <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-500 via-brand-500 to-indigo-500 text-white shadow-lg shadow-sky-500/25">
-            <Sparkles className="w-5 h-5" />
+          <div className="flex items-center justify-center w-10 h-10 rounded-2xl bg-white/80 border border-sky-100/20 shadow-lg shadow-sky-500/15 backdrop-blur-md">
+            <img src="/logo.png" alt="Studier logo" className="w-7 h-7 object-contain" />
           </div>
           <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-300 via-brand-300 to-indigo-300">
             Studier

@@ -14,8 +14,7 @@ import {
   Sun, 
   Moon, 
   X,
-  Award,
-  Sparkles
+  Award
 } from "lucide-react";
 
 export default function Sidebar({ isOpen, onClose }) {
@@ -55,8 +54,8 @@ export default function Sidebar({ isOpen, onClose }) {
         {/* Brand Header */}
         <div className="flex items-center justify-between h-16 px-6 border-b border-slate-200/50 dark:border-slate-800/40">
           <Link to="/" className="flex items-center gap-2" onClick={onClose}>
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-tr from-sky-500 via-brand-500 to-indigo-500 text-white shadow-lg shadow-sky-500/20">
-              <Sparkles className="w-4 h-4" />
+            <div className="flex items-center justify-center w-9 h-9 rounded-2xl bg-white/80border border-sky-100/80 dark:border-sky-900/30 shadow-[0_10px_24px_rgba(56,189,248,0.08)]">
+              <img src="/logo.png" alt="Studier logo" className="w-6 h-6 object-contain" />
             </div>
             <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-500 via-brand-500 to-indigo-500 dark:from-sky-300 dark:via-brand-300 dark:to-indigo-300">
               Studier

@@ -167,6 +167,9 @@ export default function Login() {
       >
         {/* Branding header */}
         <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-[1.75rem] bg-white/80 border border-sky-100/70 shadow-[0_24px_50px_rgba(34,211,238,0.18)] mb-4 backdrop-blur-md">
+            <img src="/logo.png" alt="Studier logo" className="w-14 h-14 object-contain" />
+          </div>
           <h2 className="text-3xl font-extrabold tracking-tight">
             {isSignUp ? "Create an account" : "Welcome back"}
           </h2>
