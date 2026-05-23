@@ -4,9 +4,8 @@ import { useToast } from "../context/ToastContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   BookOpen, Star, Plus, Trash2, Search, Sparkles, 
-  ArrowRight, ArrowLeft, RefreshCcw, Check, BrainCircuit, Paperclip
+  ArrowRight, ArrowLeft, RefreshCcw, Check, BrainCircuit
 } from "lucide-react";
-import { uploadFileOrBase64 } from "../services/db";
 
 export default function Flashcards() {
   const { 
@@ -14,8 +13,7 @@ export default function Flashcards() {
     addFlashcard, 
     updateFlashcard, 
     deleteFlashcard, 
-    reviewFlashcard,
-    isMockMode
+    reviewFlashcard
   } = useFirestore();
   
   const { showToast } = useToast();
@@ -32,12 +30,6 @@ export default function Flashcards() {
   const [newAnswer, setNewAnswer] = useState("");
   const [newSubject, setNewSubject] = useState("");
   const [newDifficulty, setNewDifficulty] = useState("Medium");
-
-  // Attachment states for manual creation
-  const [attachmentUrl, setAttachmentUrl] = useState("");
-  const [attachmentName, setAttachmentName] = useState("");
-  const [attachmentType, setAttachmentType] = useState("");
-  const [uploadingAttachment, setUploadingAttachment] = useState(false);
 
   // Study Mode State
   const [isStudyMode, setIsStudyMode] = useState(false);
@@ -82,46 +74,15 @@ export default function Flashcards() {
         question: newQuestion,
         answer: newAnswer,
         subject: newSubject || "General",
-        difficulty: newDifficulty,
-        attachment: attachmentUrl ? {
-          url: attachmentUrl,
-          name: attachmentName,
-          type: attachmentType
-        } : null
+        difficulty: newDifficulty
       });
       showToast("Flashcard created successfully", "success");
       setNewQuestion("");
       setNewAnswer("");
       setNewSubject("");
-      setAttachmentUrl("");
-      setAttachmentName("");
-      setAttachmentType("");
       setShowAddModal(false);
     } catch (err) {
       showToast("Failed to create flashcard", "error");
-    }
-  };
-
-  // Handle uploading files/images
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    setUploadingAttachment(true);
-    try {
-      const fileId = Math.random().toString(36).substring(2, 9);
-      const path = `users/flashcards/${fileId}_${file.name}`;
-      const url = await uploadFileOrBase64(path, file, isMockMode);
-      
-      setAttachmentUrl(url);
-      setAttachmentName(file.name);
-      setAttachmentType(file.type);
-      showToast("Attachment uploaded successfully!", "success");
-    } catch (err) {
-      console.error(err);
-      showToast("Failed to upload attachment", "error");
-    } finally {
-      setUploadingAttachment(false);
     }
   };
 
@@ -263,26 +224,6 @@ export default function Flashcards() {
                   <div className="font-bold text-lg sm:text-xl text-slate-800 dark:text-slate-200">
                     {filteredCards[currentCardIndex]?.question}
                   </div>
-                  {filteredCards[currentCardIndex]?.attachment && (
-                    <div className="flex flex-col items-center justify-center max-w-full" onClick={(e) => e.stopPropagation()}>
-                      {filteredCards[currentCardIndex].attachment.type?.startsWith("image/") ? (
-                        <img 
-                          src={filteredCards[currentCardIndex].attachment.url} 
-                          alt={filteredCards[currentCardIndex].attachment.name} 
-                          className="max-h-24 object-contain rounded-lg border border-slate-200/50 dark:border-slate-800/40 shadow-sm"
-                        />
-                      ) : (
-                        <a 
-                          href={filteredCards[currentCardIndex].attachment.url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-xs font-semibold text-brand-600 dark:text-brand-400 bg-brand-500/10 px-3 py-1.5 rounded-lg border border-brand-500/20 hover:bg-brand-500/20 transition-all flex items-center gap-1.5"
-                        >
-                          <Paperclip className="w-3 h-3" /> {filteredCards[currentCardIndex].attachment.name}
-                        </a>
-                      )}
-                    </div>
-                  )}
                 </div>
                 <span className="text-xs text-slate-400 dark:text-slate-500 text-center flex items-center justify-center gap-1">
                   <RefreshCcw className="w-3.5 h-3.5" /> Click card to flip
@@ -298,26 +239,6 @@ export default function Flashcards() {
                   <div className="text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
                     {filteredCards[currentCardIndex]?.answer}
                   </div>
-                  {filteredCards[currentCardIndex]?.attachment && (
-                    <div className="flex flex-col items-center justify-center max-w-full" onClick={(e) => e.stopPropagation()}>
-                      {filteredCards[currentCardIndex].attachment.type?.startsWith("image/") ? (
-                        <img 
-                          src={filteredCards[currentCardIndex].attachment.url} 
-                          alt={filteredCards[currentCardIndex].attachment.name} 
-                          className="max-h-24 object-contain rounded-lg border border-slate-200/50 dark:border-slate-800/40 shadow-sm"
-                        />
-                      ) : (
-                        <a 
-                          href={filteredCards[currentCardIndex].attachment.url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-xs font-semibold text-brand-600 dark:text-brand-400 bg-brand-500/10 px-3 py-1.5 rounded-lg border border-brand-500/20 hover:bg-brand-500/20 transition-all flex items-center gap-1.5"
-                        >
-                          <Paperclip className="w-3 h-3" /> {filteredCards[currentCardIndex].attachment.name}
-                        </a>
-                      )}
-                    </div>
-                  )}
                 </div>
                 <span className="text-xs text-slate-400 dark:text-slate-500 text-center">
                   Click card to view question
@@ -455,21 +376,6 @@ export default function Flashcards() {
                       <p className="text-xs text-slate-400 dark:text-slate-500 line-clamp-3">
                         {card.answer}
                       </p>
-                      {card.attachment && (
-                        <div className="pt-1.5">
-                          {card.attachment.type?.startsWith("image/") ? (
-                            <img 
-                              src={card.attachment.url} 
-                              alt={card.attachment.name} 
-                              className="max-h-16 object-contain rounded border border-slate-200/50 dark:border-slate-850"
-                            />
-                          ) : (
-                            <span className="inline-flex items-center gap-1 text-[10px] text-brand-500 font-medium bg-brand-500/5 px-2 py-0.5 rounded">
-                              <Paperclip className="w-2.5 h-2.5" /> {card.attachment.name}
-                            </span>
-                          )}
-                        </div>
-                      )}
                     </div>
 
                     {/* Bottom Status bar */}
@@ -567,30 +473,6 @@ export default function Flashcards() {
                     <option value="Medium">Medium</option>
                     <option value="Hard">Hard</option>
                   </select>
-                </div>
-              </div>
-
-              <div className="space-y-1.5 text-left">
-                <label className="text-xs font-semibold text-slate-500 block">File / Image Attachment (Optional)</label>
-                <div className="flex items-center gap-3">
-                  <label className="flex items-center gap-1.5 px-3 py-2 border border-dashed border-slate-300 dark:border-slate-800 rounded-xl text-xs text-slate-500 hover:text-brand-500 hover:border-brand-500 cursor-pointer transition-colors">
-                    <Paperclip className="w-3.5 h-3.5" />
-                    <span>Choose File</span>
-                    <input 
-                      type="file" 
-                      onChange={handleFileChange} 
-                      className="hidden" 
-                    />
-                  </label>
-                  {uploadingAttachment ? (
-                    <span className="text-xs text-slate-400 animate-pulse">Uploading...</span>
-                  ) : attachmentName ? (
-                    <span className="text-xs text-slate-600 dark:text-slate-400 font-semibold truncate max-w-[200px]" title={attachmentName}>
-                      📎 {attachmentName}
-                    </span>
-                  ) : (
-                    <span className="text-[11px] text-slate-400 font-light">No file attached</span>
-                  )}
                 </div>
               </div>
 

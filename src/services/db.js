@@ -1,15 +1,42 @@
-import { db, storage } from "../firebase/config";
+import { db } from "../firebase/config";
 import { 
   doc, 
   setDoc, 
   getDoc, 
   updateDoc, 
   deleteDoc, 
-  collection, 
-  addDoc,
-  serverTimestamp 
+  collection
 } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
+function sanitizeForFirestore(value) {
+  if (value === undefined) {
+    return null;
+  }
+
+  if (value === null || typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => sanitizeForFirestore(item))
+      .filter((item) => item !== undefined);
+  }
+
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+
+  if (typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value)
+        .map(([key, nestedValue]) => [key, sanitizeForFirestore(nestedValue)])
+        .filter(([, nestedValue]) => nestedValue !== undefined)
+    );
+  }
+
+  return String(value);
+}
 
 /**
  * User Profile Services
@@ -84,7 +111,7 @@ export async function dbAddFlashcard(card) {
     createdAt: card.createdAt || new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
-  await setDoc(doc(db, "flashcards", docId), cardData);
+  await setDoc(doc(db, "flashcards", docId), sanitizeForFirestore(cardData));
   return cardData;
 }
 
@@ -94,7 +121,7 @@ export async function dbUpdateFlashcard(id, updates) {
     ...updates,
     updatedAt: new Date().toISOString()
   };
-  await updateDoc(cardRef, cleanUpdates);
+  await updateDoc(cardRef, sanitizeForFirestore(cleanUpdates));
 }
 
 export async function dbDeleteFlashcard(id) {
@@ -112,7 +139,7 @@ export async function dbAddNote(note) {
     createdAt: note.createdAt || new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
-  await setDoc(doc(db, "notes", docId), noteData);
+  await setDoc(doc(db, "notes", docId), sanitizeForFirestore(noteData));
   return noteData;
 }
 
@@ -122,7 +149,7 @@ export async function dbUpdateNote(id, updates) {
     ...updates,
     updatedAt: new Date().toISOString()
   };
-  await updateDoc(noteRef, cleanUpdates);
+  await updateDoc(noteRef, sanitizeForFirestore(cleanUpdates));
 }
 
 export async function dbDeleteNote(id) {
@@ -139,7 +166,7 @@ export async function dbLogStudySession(session) {
     id: docId,
     createdAt: session.createdAt || new Date().toISOString()
   };
-  await setDoc(doc(db, "studySessions", docId), sessionData);
+  await setDoc(doc(db, "studySessions", docId), sanitizeForFirestore(sessionData));
   return sessionData;
 }
 
@@ -154,32 +181,6 @@ export async function dbSaveTimetable(timetable) {
     createdAt: timetable.createdAt || new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
-  await setDoc(doc(db, "timetables", docId), timetableData);
+  await setDoc(doc(db, "timetables", docId), sanitizeForFirestore(timetableData));
   return timetableData;
-}
-
-/**
- * Storage / File Upload Services
- */
-export function readFileAsBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
-  });
-}
-
-export async function uploadFileOrBase64(path, file, isMock) {
-  if (isMock) {
-    return await readFileAsBase64(file);
-  }
-  try {
-    const storageRef = ref(storage, path);
-    const snapshot = await uploadBytes(storageRef, file);
-    return await getDownloadURL(snapshot.ref);
-  } catch (err) {
-    console.warn("Firebase Storage upload failed, falling back to Base64:", err);
-    return await readFileAsBase64(file);
-  }
 }

@@ -1,11 +1,10 @@
-const CACHE_NAME = "studier-v1";
+const CACHE_NAME = "studier-v2";
 const ASSETS_TO_CACHE = [
   "/",
   "/index.html",
-  "/src/main.jsx",
-  "/src/App.jsx",
-  "/src/index.css",
-  "/public/manifest.json"
+  "/manifest.json",
+  "/favicon.svg",
+  "/icons.svg"
 ];
 
 // Install Service Worker
@@ -43,13 +42,26 @@ self.addEventListener("fetch", (e) => {
     return;
   }
 
+  if (e.request.mode === "navigate") {
+    e.respondWith(
+      fetch(e.request).catch(async () => {
+        const cachedIndex = await caches.match("/index.html");
+        return cachedIndex || new Response("Offline", {
+          status: 503,
+          statusText: "Offline"
+        });
+      })
+    );
+    return;
+  }
+
   e.respondWith(
     caches.match(e.request).then((cachedResponse) => {
       if (cachedResponse) {
         // Return cache, but fetch fresh content in background (stale-while-revalidate)
         fetch(e.request).then((networkResponse) => {
           if (networkResponse.status === 200) {
-            caches.open(CACHE_NAME).then((cache) => cache.put(e.request, networkResponse));
+            caches.open(CACHE_NAME).then((cache) => cache.put(e.request, networkResponse.clone()));
           }
         }).catch(() => {/* ignore network errors offline */});
         
@@ -68,10 +80,10 @@ self.addEventListener("fetch", (e) => {
         
         return response;
       }).catch(() => {
-        // Offline fallback for index/HTML navigation
-        if (e.request.mode === "navigate") {
-          return caches.match("/index.html");
-        }
+        return new Response("Offline", {
+          status: 503,
+          statusText: "Offline"
+        });
       });
     })
   );

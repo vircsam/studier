@@ -221,13 +221,13 @@ export default function Analytics() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
             {/* Daily study hours bar chart */}
-            <div className="glass-card p-6 rounded-2xl">
+            <div className="glass-card p-6 rounded-2xl min-w-0">
               <div className="pb-4 border-b border-slate-200/50 dark:border-slate-800/40">
                 <h3 className="font-bold text-slate-800 dark:text-slate-100">Study Distribution History</h3>
                 <p className="text-xs text-slate-400">Hours spent studying daily</p>
               </div>
-              <div className="h-64 w-full mt-6">
-                <ResponsiveContainer width="100%" height="100%">
+              <div className="h-64 w-full min-w-0 mt-6">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={256}>
                   <AreaChart data={dailyChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorHoursChart" x1="0" y1="0" x2="0" y2="1">
@@ -252,16 +252,16 @@ export default function Analytics() {
             </div>
 
             {/* Subject allocation pie chart */}
-            <div className="glass-card p-6 rounded-2xl flex flex-col justify-between">
+            <div className="glass-card p-6 rounded-2xl flex flex-col justify-between min-w-0">
               <div className="pb-4 border-b border-slate-200/50 dark:border-slate-800/40">
                 <h3 className="font-bold text-slate-800 dark:text-slate-100">Focus Split by Subject</h3>
                 <p className="text-xs text-slate-400">Share of total study time</p>
               </div>
 
               {subjectData.length > 0 ? (
-                <div className="flex-1 flex flex-col sm:flex-row items-center justify-around gap-6 mt-6 min-h-[200px]">
-                  <div className="w-40 h-40 flex-shrink-0">
-                    <ResponsiveContainer width="100%" height="100%">
+                <div className="flex-1 flex flex-col sm:flex-row items-center justify-around gap-6 mt-6 min-h-[200px] min-w-0">
+                  <div className="w-40 h-40 min-w-0 flex-shrink-0">
+                    <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={160}>
                       <PieChart>
                         <Pie
                           data={subjectData}

@@ -197,7 +197,7 @@ export default function Dashboard() {
       {/* Analytics Chart & Schedule Split */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Weekly Progress Chart */}
-        <div className="lg:col-span-2 glass-card p-6 rounded-2xl flex flex-col justify-between">
+        <div className="lg:col-span-2 glass-card p-6 rounded-2xl flex flex-col justify-between min-w-0">
           <div className="flex items-center justify-between pb-4 border-b border-slate-200/50 dark:border-slate-800/40">
             <div>
               <h3 className="font-bold text-slate-800 dark:text-slate-100">Weekly Progress</h3>
@@ -206,8 +206,8 @@ export default function Dashboard() {
             <span className="text-xs font-semibold text-brand-600 dark:text-brand-400 bg-brand-500/10 px-2.5 py-1 rounded-full">Last 7 Days</span>
           </div>
 
-          <div className="h-64 w-full mt-6">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-64 w-full min-w-0 mt-6">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={256}>
               <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
