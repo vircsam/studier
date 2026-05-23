@@ -15,7 +15,7 @@ export default function handler(req, res) {
   }
 
   try {
-    const { subjects, examDates, dailyHours, daysToSchedule = 7 } = req.body;
+    const { subjects, examDates, dailyHours, daysToSchedule = 7, targetDay } = req.body;
 
     if (!subjects || !Array.isArray(subjects) || subjects.length === 0) {
       return res.status(400).json({ error: "Missing or invalid subjects parameter." });
@@ -66,8 +66,10 @@ export default function handler(req, res) {
     // 2. Determine slot distribution based on weights
     // We break the day into slots. Each slot is a 45 min focus + 15 min break.
     // So 1 slot = 1 hour of allocated study time.
+    const isSingleDay = targetDay && targetDay !== "All Days";
+    const daysCount = isSingleDay ? 1 : Math.min(daysToSchedule, 7);
     const slotsPerDay = Math.min(8, Math.max(1, Math.round(hours)));
-    const totalSlots = slotsPerDay * daysToSchedule;
+    const totalSlots = slotsPerDay * daysCount;
 
     // Allocate total slots to subjects proportional to weight
     const allocations = subjectWeights.map(sw => {
@@ -95,8 +97,8 @@ export default function handler(req, res) {
 
     const startHour = 9; // study starts at 9:00 AM
 
-    for (let d = 0; d < Math.min(daysToSchedule, 7); d++) {
-      const dayName = DAYS[d];
+    for (let d = 0; d < daysCount; d++) {
+      const dayName = isSingleDay ? targetDay : DAYS[d];
       const slots = [];
       let currentHour = startHour;
 

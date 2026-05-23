@@ -29,10 +29,34 @@ export default function Timetable() {
 
   // Daily hours state
   const [dailyHours, setDailyHours] = useState(4);
+  const [selectedGenerateDay, setSelectedGenerateDay] = useState("All Days");
   const [generating, setGenerating] = useState(false);
 
   // Active day view for output
   const [activeDayTab, setActiveDayTab] = useState("Monday");
+
+  // Calculate calendar dates for the week
+  const weekDates = useMemo(() => {
+    const current = new Date();
+    const dayOfWeek = current.getDay(); // 0 is Sunday, 1 is Monday, ..., 6 is Saturday
+    const distanceToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    
+    const monday = new Date(current);
+    monday.setDate(current.getDate() + distanceToMonday);
+    
+    const dates = {};
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    
+    const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    for (let i = 0; i < 7; i++) {
+      const dayDate = new Date(monday);
+      dayDate.setDate(monday.getDate() + i);
+      const dateNum = dayDate.getDate();
+      const month = monthNames[dayDate.getMonth()];
+      dates[DAYS[i]] = `${month} ${dateNum}`;
+    }
+    return dates;
+  }, []);
 
   // Edit subject index state
   const [editingSubjectIdx, setEditingSubjectIdx] = useState(null);
@@ -325,23 +349,51 @@ export default function Timetable() {
         body: JSON.stringify({
           subjects,
           examDates,
-          dailyHours
+          dailyHours,
+          targetDay: selectedGenerateDay
         })
       });
       const data = await response.json();
 
       if (data.success && data.schedule) {
+        let updatedSchedule = [];
+        const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+        if (selectedGenerateDay && selectedGenerateDay !== "All Days") {
+          // If we have an active timetable, merge with it
+          if (activeTimetable && activeTimetable.schedule) {
+            updatedSchedule = activeTimetable.schedule.map(dayObj => {
+              const newDayData = data.schedule.find(d => d.day === dayObj.day);
+              if (newDayData) {
+                return newDayData;
+              }
+              return dayObj;
+            });
+          } else {
+            // Otherwise create a weekly structure where only targetDay is populated, others are empty
+            updatedSchedule = DAYS.map(dayName => {
+              const newDayData = data.schedule.find(d => d.day === dayName);
+              return newDayData || { day: dayName, slots: [] };
+            });
+          }
+        } else {
+          // "All Days" generates the full schedule
+          updatedSchedule = data.schedule;
+        }
+
         await saveTimetable({
           id: activeTimetable?.id,
           createdAt: activeTimetable?.createdAt,
           subjects,
           examDates,
           dailyHours,
-          schedule: data.schedule
+          schedule: updatedSchedule
         });
-        showToast("Study timetable generated successfully!", "success");
-        if (data.schedule.length > 0) {
-          setActiveDayTab(data.schedule[0].day);
+        showToast(`Study timetable generated successfully for ${selectedGenerateDay}!`, "success");
+        if (selectedGenerateDay && selectedGenerateDay !== "All Days") {
+          setActiveDayTab(selectedGenerateDay);
+        } else if (updatedSchedule.length > 0) {
+          setActiveDayTab(updatedSchedule[0].day);
         }
       } else {
         throw new Error(data.error || "Generation failure");
@@ -509,25 +561,45 @@ export default function Timetable() {
           {/* Target Hours Select */}
           <div className="glass-panel p-6 rounded-3xl space-y-4">
             <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 text-sm border-b border-slate-200/50 dark:border-slate-800/40 pb-3">
-              3. Study Hours Target
+              3. Study Hours & Day Option
             </h3>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-400">Daily focus study goal:</span>
-                <span className="text-sm font-bold text-brand-600 dark:text-brand-400">{dailyHours} Hours</span>
+            <div className="space-y-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-400">Daily focus study goal:</span>
+                  <span className="text-sm font-bold text-brand-600 dark:text-brand-400">{dailyHours} Hours</span>
+                </div>
+                <input
+                  type="range"
+                  min="1"
+                  max="8"
+                  value={dailyHours}
+                  onChange={(e) => setDailyHours(Number(e.target.value))}
+                  className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-brand-500"
+                />
+                <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
+                  <span>1 Hour</span>
+                  <span>4 Hours</span>
+                  <span>8 Hours</span>
+                </div>
               </div>
-              <input
-                type="range"
-                min="1"
-                max="8"
-                value={dailyHours}
-                onChange={(e) => setDailyHours(Number(e.target.value))}
-                className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-brand-500"
-              />
-              <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
-                <span>1 Hour</span>
-                <span>4 Hours</span>
-                <span>8 Hours</span>
+
+              {/* Target Day Selector */}
+              <div className="space-y-2 pt-3.5 border-t border-slate-200/40 dark:border-slate-800/40">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-slate-500">Generate for:</label>
+                  <span className="text-xs font-bold text-brand-600 dark:text-brand-400">{selectedGenerateDay}</span>
+                </div>
+                <select
+                  value={selectedGenerateDay}
+                  onChange={(e) => setSelectedGenerateDay(e.target.value)}
+                  className="w-full bg-slate-100/50 dark:bg-slate-950/40 border border-slate-200/50 dark:border-slate-800/40 rounded-xl px-3 py-2 text-xs outline-none focus:border-brand-500 cursor-pointer font-medium dark:text-slate-200"
+                >
+                  <option value="All Days" className="dark:bg-slate-900">All Days (Full Week)</option>
+                  {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map(day => (
+                    <option key={day} value={day} className="dark:bg-slate-900">{day}</option>
+                  ))}
+                </select>
               </div>
             </div>
 
@@ -589,13 +661,20 @@ export default function Timetable() {
                     <button
                       key={i}
                       onClick={() => setActiveDayTab(dayObj.day)}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                      className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex flex-col items-center cursor-pointer ${
                         activeDayTab === dayObj.day
                           ? "bg-brand-500 text-white shadow-md shadow-brand-500/20"
                           : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-900/60 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-400"
                       }`}
                     >
-                      {dayObj.day}
+                      <span className="leading-tight">{dayObj.day}</span>
+                      {weekDates[dayObj.day] && (
+                        <span className={`text-[10px] font-semibold mt-0.5 leading-none ${
+                          activeDayTab === dayObj.day ? "text-brand-100/90" : "text-slate-400 dark:text-slate-500"
+                        }`}>
+                          {weekDates[dayObj.day]}
+                        </span>
+                      )}
                     </button>
                   ))}
                 </div>
