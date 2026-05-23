@@ -4,7 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useFirestore } from "../hooks/useFirestore";
 import { useToast } from "../context/ToastContext";
 import { motion } from "framer-motion";
-import { Sparkles, Mail, Lock, User, ArrowRight, Database } from "lucide-react";
+import { Mail, Lock, User, ArrowRight, Database } from "lucide-react";
 
 const SIGN_IN_RATE_LIMIT_KEY = "studier_signin_rate_limit";
 const MAX_SIGN_IN_ATTEMPTS = 5;
@@ -154,7 +154,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center p-4 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(103,232,249,0.2),_transparent_24%),radial-gradient(circle_at_85%_15%,_rgba(96,165,250,0.18),_transparent_20%),linear-gradient(180deg,_#081120_0%,_#0c1728_48%,_#102036_100%)] text-slate-100 flex items-center justify-center p-4 relative overflow-hidden font-sans">
       {/* Decorative Orbs */}
       <div className="absolute top-[-10%] left-[-15%] w-[40%] h-[40%] rounded-full bg-brand-500/10 blur-[130px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-15%] w-[40%] h-[40%] rounded-full bg-blue-500/10 blur-[130px] pointer-events-none" />
@@ -167,9 +167,6 @@ export default function Login() {
       >
         {/* Branding header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-500 text-white shadow-xl shadow-brand-500/20 mb-3">
-            <Sparkles className="w-6 h-6 animate-pulse" />
-          </div>
           <h2 className="text-3xl font-extrabold tracking-tight">
             {isSignUp ? "Create an account" : "Welcome back"}
           </h2>
@@ -192,7 +189,7 @@ export default function Login() {
         )}
 
         {/* Form Container */}
-        <div className="bg-slate-950/40 backdrop-blur-xl border border-white/5 p-8 rounded-3xl shadow-2xl space-y-6">
+        <div className="bg-slate-950/38 backdrop-blur-xl border border-sky-100/10 p-8 rounded-3xl shadow-[0_30px_90px_rgba(2,6,23,0.5)] space-y-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             {isSignUp && (
               <div className="space-y-1.5">

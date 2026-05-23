@@ -31,7 +31,7 @@ export default function AppLayout({ children, title }) {
 
   if (isAuthLoading && !isPublic) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-950">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(125,211,252,0.16),_transparent_24%),linear-gradient(180deg,_#f8fbff_0%,_#edf5ff_100%)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.12),_transparent_20%),linear-gradient(180deg,_#081120_0%,_#0d1b2f_100%)]">
         <div className="relative flex items-center justify-center w-16 h-16">
           <div className="absolute w-full h-full border-4 border-brand-500/20 rounded-full"></div>
           <div className="absolute w-full h-full border-4 border-t-brand-500 rounded-full animate-spin"></div>
@@ -54,7 +54,7 @@ export default function AppLayout({ children, title }) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+    <div className="min-h-screen text-slate-900 dark:text-slate-100 bg-[radial-gradient(circle_at_top_left,_rgba(125,211,252,0.16),_transparent_24%),linear-gradient(180deg,_#f8fbff_0%,_#edf5ff_100%)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.12),_transparent_20%),linear-gradient(180deg,_#081120_0%,_#0d1b2f_100%)]">
       {/* Sidebar Nav */}
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 

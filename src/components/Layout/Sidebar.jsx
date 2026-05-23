@@ -33,8 +33,8 @@ export default function Sidebar({ isOpen, onClose }) {
     { name: "Analytics", path: "/analytics", icon: BarChart3 },
   ];
 
-  const activeClass = "bg-brand-500/10 text-brand-600 dark:text-brand-400 font-medium border-l-4 border-brand-500";
-  const inactiveClass = "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900/60 hover:text-slate-900 dark:hover:text-white transition-all";
+  const activeClass = "bg-gradient-to-r from-sky-500/12 to-brand-500/10 text-brand-700 dark:text-sky-200 font-medium border-l-4 border-sky-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]";
+  const inactiveClass = "text-slate-600 dark:text-slate-400 hover:bg-sky-50/70 dark:hover:bg-slate-900/60 hover:text-slate-900 dark:hover:text-white transition-all";
 
   return (
     <>
@@ -48,17 +48,17 @@ export default function Sidebar({ isOpen, onClose }) {
 
       {/* Sidebar Panel */}
       <aside 
-        className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col w-64 border-r border-slate-200/50 dark:border-slate-800/40 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl transition-transform duration-300 lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col w-64 border-r border-sky-100/70 dark:border-sky-900/20 bg-white/72 dark:bg-slate-950/72 backdrop-blur-xl transition-transform duration-300 lg:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* Brand Header */}
         <div className="flex items-center justify-between h-16 px-6 border-b border-slate-200/50 dark:border-slate-800/40">
           <Link to="/" className="flex items-center gap-2" onClick={onClose}>
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-600 to-indigo-500 text-white shadow-lg shadow-brand-500/20">
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-tr from-sky-500 via-brand-500 to-indigo-500 text-white shadow-lg shadow-sky-500/20">
               <Sparkles className="w-4 h-4" />
             </div>
-            <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-400 dark:to-indigo-400">
+            <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-500 via-brand-500 to-indigo-500 dark:from-sky-300 dark:via-brand-300 dark:to-indigo-300">
               Studier
             </span>
           </Link>
@@ -72,7 +72,7 @@ export default function Sidebar({ isOpen, onClose }) {
 
         {/* Streak indicator */}
         {user && (
-          <div className="mx-4 my-4 p-3 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 flex items-center justify-between">
+          <div className="mx-4 my-4 p-3 rounded-xl bg-gradient-to-r from-amber-500/12 to-sky-500/10 border border-amber-400/20 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Award className="w-5 h-5 text-amber-500 animate-bounce" />
               <span className="text-sm font-semibold text-amber-600 dark:text-amber-400">Streak: {streak} days</span>

@@ -110,26 +110,26 @@ export default function Dashboard() {
   return (
     <div className="space-y-8">
       {/* Welcome Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-brand-600 to-indigo-600 text-white shadow-xl shadow-brand-500/10">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 sm:p-8 rounded-3xl border border-cyan-100/90 dark:border-cyan-900/25 bg-[linear-gradient(135deg,rgba(236,254,255,0.98),rgba(224,242,254,0.96),rgba(239,246,255,0.94))] dark:bg-[linear-gradient(135deg,rgba(10,31,46,0.96),rgba(12,39,58,0.9),rgba(16,43,67,0.88))] text-slate-900 dark:text-slate-100 shadow-[0_18px_45px_rgba(34,211,238,0.1)] dark:shadow-[0_24px_50px_rgba(2,6,23,0.28)]">
         <div className="space-y-2">
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
             Welcome back, {user?.displayName || "Student"}!
           </h2>
-          <p className="text-brand-100 font-light text-sm max-w-xl">
+          <p className="text-slate-600 dark:text-cyan-50/85 font-light text-sm max-w-xl">
             You're making great progress! Ready to crush your targets? Complete today's focus block to keep your streak.
           </p>
         </div>
         <div className="flex items-center gap-4 flex-shrink-0">
-          <div className="px-4 py-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 flex flex-col items-center">
-            <span className="text-xs text-brand-200 font-semibold uppercase tracking-wider">Streak</span>
-            <span className="text-xl font-bold flex items-center gap-1.5 text-amber-300">
+          <div className="px-4 py-3 rounded-2xl bg-white/78 dark:bg-white/5 backdrop-blur-md border border-cyan-100 dark:border-white/10 flex flex-col items-center">
+            <span className="text-xs text-slate-500 dark:text-cyan-50/70 font-semibold uppercase tracking-wider">Streak</span>
+            <span className="text-xl font-bold flex items-center gap-1.5 text-amber-500 dark:text-amber-300">
               <Award className="w-5 h-5" />
               {streak} Days
             </span>
           </div>
-          <div className="px-4 py-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 flex flex-col items-center">
-            <span className="text-xs text-brand-200 font-semibold uppercase tracking-wider">Prod Score</span>
-            <span className="text-xl font-bold text-emerald-300">
+          <div className="px-4 py-3 rounded-2xl bg-white/78 dark:bg-white/5 backdrop-blur-md border border-cyan-100 dark:border-white/10 flex flex-col items-center">
+            <span className="text-xs text-slate-500 dark:text-cyan-50/70 font-semibold uppercase tracking-wider">Prod Score</span>
+            <span className="text-xl font-bold text-cyan-600 dark:text-cyan-300">
               {productivityScore}%
             </span>
           </div>
@@ -172,7 +172,7 @@ export default function Dashboard() {
             </p>
             <p className="text-xs text-slate-400">Study guides and notes stored</p>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+          <div className="w-12 h-12 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-300 flex items-center justify-center group-hover:scale-110 transition-transform">
             <FileText className="w-6 h-6" />
           </div>
         </Link>
@@ -211,8 +211,8 @@ export default function Dashboard() {
               <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#38bdf8" stopOpacity={0.24}/>
+                    <stop offset="95%" stopColor="#38bdf8" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="#64748b" tickLine={false} axisLine={false} />
@@ -225,7 +225,7 @@ export default function Dashboard() {
                     color: "#fff"
                   }} 
                 />
-                <Area type="monotone" dataKey="hours" stroke="#8b5cf6" strokeWidth={2} fillOpacity={1} fill="url(#colorHours)" />
+                <Area type="monotone" dataKey="hours" stroke="#2566eb" strokeWidth={2} fillOpacity={1} fill="url(#colorHours)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>

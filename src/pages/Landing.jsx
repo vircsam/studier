@@ -33,18 +33,19 @@ export default function Landing() {
   };
 
   return (
-    <div className="relative min-h-screen bg-slate-900 text-slate-100 overflow-hidden font-sans selection:bg-brand-500 selection:text-white">
+    <div className="relative min-h-screen overflow-hidden font-sans text-slate-100 selection:bg-brand-500 selection:text-white bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.18),_transparent_28%),radial-gradient(circle_at_85%_20%,_rgba(59,130,246,0.16),_transparent_24%),linear-gradient(180deg,_#06111f_0%,_#0a1628_42%,_#0d1b2f_100%)]">
       {/* Decorative Blur Orbs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-brand-500/10 blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/10 blur-[150px] pointer-events-none" />
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-sky-400/12 blur-[150px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-brand-500/14 blur-[150px] pointer-events-none" />
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sky-300/40 to-transparent pointer-events-none" />
 
       {/* Navbar Header */}
-      <header className="sticky top-0 z-50 flex items-center justify-between h-20 px-6 max-w-7xl mx-auto backdrop-blur-md border-b border-white/5 bg-slate-950/40">
+      <header className="sticky top-0 z-50 flex items-center justify-between h-20 px-6 max-w-7xl mx-auto backdrop-blur-xl border-b border-white/10 bg-slate-950/35">
         <div className="flex items-center gap-2">
-          <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 text-white shadow-lg shadow-brand-500/30">
+          <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-500 via-brand-500 to-indigo-500 text-white shadow-lg shadow-sky-500/25">
             <Sparkles className="w-5 h-5" />
           </div>
-          <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-brand-400 to-indigo-400">
+          <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-300 via-brand-300 to-indigo-300">
             Studier
           </span>
         </div>
@@ -58,7 +59,7 @@ export default function Landing() {
           </Link>
           <Link
             to="/login?signup=true"
-            className="px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 rounded-xl shadow-lg shadow-brand-500/20 hover:scale-[1.02] active:scale-95 transition-all"
+            className="px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-sky-500 via-brand-500 to-indigo-500 hover:from-sky-400 hover:via-brand-400 hover:to-indigo-400 rounded-xl shadow-lg shadow-sky-500/20 hover:scale-[1.02] active:scale-95 transition-all"
           >
             Get Started Free
           </Link>
@@ -75,7 +76,7 @@ export default function Landing() {
         >
           <motion.div
             variants={itemVariants}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-brand-500/10 text-brand-400 border border-brand-500/20"
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-sky-400/10 text-sky-200 border border-sky-300/15 shadow-[0_0_0_1px_rgba(125,211,252,0.06)]"
           >
             <GraduationCap className="w-4 h-4" />
             <span>AI-Powered Study Assistant</span>
@@ -86,7 +87,7 @@ export default function Landing() {
             className="text-4xl sm:text-6xl font-extrabold tracking-tight leading-tight"
           >
             Learn smarter, retain longer, and{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-brand-400 via-indigo-400 to-blue-400">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-sky-300 via-brand-300 to-indigo-300">
               study effectively
             </span>
           </motion.h1>
@@ -104,17 +105,11 @@ export default function Landing() {
           >
             <Link
               to="/login"
-              className="flex items-center gap-2 w-full sm:w-auto justify-center px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 rounded-2xl shadow-xl shadow-brand-500/30 hover:scale-105 active:scale-95 transition-all"
+              className="flex items-center gap-2 w-full sm:w-auto justify-center px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-sky-500 via-brand-500 to-indigo-500 hover:from-sky-400 hover:via-brand-400 hover:to-indigo-400 rounded-2xl shadow-xl shadow-sky-500/25 hover:scale-105 active:scale-95 transition-all"
             >
               Start Studying Now
               <ChevronRight className="w-5 h-5" />
             </Link>
-            <a
-              href="#features"
-              className="w-full sm:w-auto text-center px-8 py-4 text-base font-semibold text-slate-300 hover:text-white border border-white/10 hover:border-white/20 hover:bg-white/5 rounded-2xl transition-all"
-            >
-              Explore Features
-            </a>
           </motion.div>
         </motion.div>
 
@@ -122,7 +117,7 @@ export default function Landing() {
         <motion.div
           variants={floatAnimation}
           animate="animate"
-          className="mt-16 w-full max-w-5xl rounded-3xl overflow-hidden border border-white/10 bg-slate-950/60 p-4 shadow-2xl"
+          className="mt-16 w-full max-w-5xl rounded-3xl overflow-hidden border border-sky-200/10 bg-slate-950/55 p-4 shadow-[0_24px_80px_rgba(3,8,20,0.55)]"
         >
           <div className="flex items-center gap-2 pb-3 border-b border-white/5 px-2">
             <div className="w-3.5 h-3.5 rounded-full bg-rose-500/60" />
@@ -130,7 +125,7 @@ export default function Landing() {
             <div className="w-3.5 h-3.5 rounded-full bg-emerald-500/60" />
             <span className="text-xs text-slate-500 ml-2 font-mono">https://studier.vercel.app/dashboard</span>
           </div>
-          <div className="aspect-[16/9] bg-gradient-to-br from-slate-900 to-slate-950 flex items-center justify-center p-8">
+          <div className="aspect-[16/9] bg-[linear-gradient(135deg,_rgba(10,25,47,0.96),_rgba(8,17,31,0.92))] flex items-center justify-center p-8">
             <div className="grid grid-cols-3 gap-4 w-full h-full max-w-4xl text-left">
               <div className="col-span-2 rounded-2xl bg-white/5 border border-white/5 p-5 space-y-4">
                 <div className="h-6 w-1/3 rounded-lg bg-white/10" />
@@ -154,7 +149,7 @@ export default function Landing() {
                     {[35, 60, 45, 90, 50, 75, 40].map((h, i) => (
                       <div
                         key={i}
-                        className="bg-brand-500 rounded-t-md w-full"
+                        className="bg-gradient-to-t from-brand-600 to-sky-400 rounded-t-md w-full"
                         style={{ height: `${h}%` }}
                       />
                     ))}
@@ -164,16 +159,16 @@ export default function Landing() {
               <div className="rounded-2xl bg-white/5 border border-white/5 p-5 space-y-4 flex flex-col justify-between">
                 <span className="text-sm font-semibold block border-b border-white/5 pb-2">Upcoming Timetable</span>
                 <div className="space-y-3 flex-1 pt-1">
-                  <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-xs">
-                    <span className="font-semibold text-indigo-400 block">09:00 AM - Databases</span>
+                  <div className="p-2.5 rounded-xl bg-sky-500/10 border border-sky-500/20 text-xs">
+                    <span className="font-semibold text-sky-300 block">09:00 AM - Databases</span>
                     <span className="text-slate-400">Spaced repetition deck</span>
                   </div>
                   <div className="p-2.5 rounded-xl bg-brand-500/10 border border-brand-500/20 text-xs">
-                    <span className="font-semibold text-brand-400 block">10:00 AM - Computer Science</span>
+                    <span className="font-semibold text-brand-300 block">10:00 AM - Computer Science</span>
                     <span className="text-slate-400">Focus pomodoro session</span>
                   </div>
-                  <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs">
-                    <span className="font-semibold text-emerald-400 block">11:00 AM - Web Dev</span>
+                  <div className="p-2.5 rounded-xl bg-cyan-400/10 border border-cyan-300/20 text-xs">
+                    <span className="font-semibold text-cyan-200 block">11:00 AM - Web Dev</span>
                     <span className="text-slate-400">Practice questions & notes</span>
                   </div>
                 </div>
@@ -184,7 +179,7 @@ export default function Landing() {
       </section>
 
       {/* Features Grid */}
-      <section id="features" className="px-6 py-24 max-w-7xl mx-auto border-t border-white/5">
+      <section id="features" className="px-6 py-24 max-w-7xl mx-auto border-t border-white/10">
         <div className="text-center max-w-2xl mx-auto mb-16 space-y-4">
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Scientifically Built For High Performance</h2>
           <p className="text-slate-400">Everything you need to streamline learning and excel in exams without cognitive overload.</p>
@@ -192,8 +187,8 @@ export default function Landing() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Card 1 */}
-          <div className="p-6 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-500/20 transition-all space-y-4 group">
-            <div className="w-12 h-12 rounded-xl bg-brand-500/10 text-brand-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+          <div className="p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-sky-300/20 transition-all space-y-4 group shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+            <div className="w-12 h-12 rounded-xl bg-sky-500/10 text-sky-300 flex items-center justify-center group-hover:scale-110 transition-transform">
               <Brain className="w-6 h-6" />
             </div>
             <h3 className="text-lg font-bold">Spaced Repetition</h3>
@@ -201,8 +196,8 @@ export default function Landing() {
           </div>
 
           {/* Card 2 */}
-          <div className="p-6 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-500/20 transition-all space-y-4 group">
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+          <div className="p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-brand-300/20 transition-all space-y-4 group shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+            <div className="w-12 h-12 rounded-xl bg-brand-500/10 text-brand-300 flex items-center justify-center group-hover:scale-110 transition-transform">
               <Calendar className="w-6 h-6" />
             </div>
             <h3 className="text-lg font-bold">Timetable Generator</h3>
@@ -210,8 +205,8 @@ export default function Landing() {
           </div>
 
           {/* Card 3 */}
-          <div className="p-6 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-500/20 transition-all space-y-4 group">
-            <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+          <div className="p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-amber-300/20 transition-all space-y-4 group shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+            <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-300 flex items-center justify-center group-hover:scale-110 transition-transform">
               <Clock className="w-6 h-6" />
             </div>
             <h3 className="text-lg font-bold">Pomodoro Timer</h3>
@@ -219,8 +214,8 @@ export default function Landing() {
           </div>
 
           {/* Card 4 */}
-          <div className="p-6 rounded-2xl bg-white/5 border border-white/5 hover:border-brand-500/20 transition-all space-y-4 group">
-            <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+          <div className="p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-cyan-300/20 transition-all space-y-4 group shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+            <div className="w-12 h-12 rounded-xl bg-cyan-400/10 text-cyan-200 flex items-center justify-center group-hover:scale-110 transition-transform">
               <BarChart3 className="w-6 h-6" />
             </div>
             <h3 className="text-lg font-bold">Detailed Analytics</h3>
