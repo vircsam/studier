@@ -6,7 +6,8 @@ import {
   signOut, 
   signInWithPopup, 
   GoogleAuthProvider,
-  onAuthStateChanged
+  onAuthStateChanged,
+  sendEmailVerification
 } from "firebase/auth";
 import { 
   collection, 
@@ -65,6 +66,15 @@ export const useStore = create((set, get) => ({
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const fbUser = userCredential.user;
+
+      if (!fbUser.emailVerified) {
+        await signOut(auth);
+        set({ isAuthLoading: false });
+        const verificationError = new Error("Please verify your email before signing in.");
+        verificationError.code = "auth/email-not-verified";
+        throw verificationError;
+      }
+
       const userData = await createUserProfile(fbUser.uid, fbUser);
       set({ user: userData });
       return userData;
@@ -79,12 +89,14 @@ export const useStore = create((set, get) => ({
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const fbUser = userCredential.user;
+      await sendEmailVerification(fbUser);
       const userData = await createUserProfile(fbUser.uid, {
         email: fbUser.email,
         displayName: displayName || fbUser.displayName
       });
-      set({ user: userData });
-      return userData;
+      await signOut(auth);
+      set({ user: null, isAuthLoading: false });
+      return { ...userData, verificationEmailSent: true };
     } catch (error) {
       set({ isAuthLoading: false });
       throw error;

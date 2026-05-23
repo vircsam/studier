@@ -6,6 +6,36 @@ import { useToast } from "../context/ToastContext";
 import { motion } from "framer-motion";
 import { Sparkles, Mail, Lock, User, ArrowRight, Database } from "lucide-react";
 
+const SIGN_IN_RATE_LIMIT_KEY = "studier_signin_rate_limit";
+const MAX_SIGN_IN_ATTEMPTS = 5;
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+const RATE_LIMIT_LOCK_MS = 5 * 60 * 1000;
+
+function getRateLimitState() {
+  try {
+    const rawValue = localStorage.getItem(SIGN_IN_RATE_LIMIT_KEY);
+    if (!rawValue) {
+      return { attempts: [] };
+    }
+
+    const parsedValue = JSON.parse(rawValue);
+    return {
+      attempts: Array.isArray(parsedValue.attempts) ? parsedValue.attempts : [],
+      lockedUntil: typeof parsedValue.lockedUntil === "number" ? parsedValue.lockedUntil : null,
+    };
+  } catch {
+    return { attempts: [] };
+  }
+}
+
+function saveRateLimitState(state) {
+  localStorage.setItem(SIGN_IN_RATE_LIMIT_KEY, JSON.stringify(state));
+}
+
+function getRemainingLockTime(lockedUntil) {
+  return Math.max(0, Math.ceil((lockedUntil - Date.now()) / 1000));
+}
+
 export default function Login() {
   const { signInEmail, signUpEmail, signInGoogle } = useAuth();
   const { isMockMode } = useFirestore();
@@ -16,33 +46,94 @@ export default function Login() {
   const [isSignUp, setIsSignUp] = useState(searchParams.get("signup") === "true");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [lockedUntil, setLockedUntil] = useState(() => getRateLimitState().lockedUntil || null);
 
   useEffect(() => {
     setIsSignUp(searchParams.get("signup") === "true");
   }, [searchParams]);
 
+  useEffect(() => {
+    if (!lockedUntil) {
+      return;
+    }
+
+    const timerId = window.setInterval(() => {
+      if (Date.now() >= lockedUntil) {
+        setLockedUntil(null);
+        saveRateLimitState({ attempts: [] });
+      }
+    }, 1000);
+
+    return () => window.clearInterval(timerId);
+  }, [lockedUntil]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email || !password || (isSignUp && !displayName)) {
+    if (!email || !password || (isSignUp && (!displayName || !confirmPassword))) {
       showToast("Please fill in all fields", "warning");
       return;
+    }
+
+    if (isSignUp && password !== confirmPassword) {
+      showToast("Password and confirm password must match", "warning");
+      return;
+    }
+
+    if (!isSignUp) {
+      const rateLimitState = getRateLimitState();
+      if (rateLimitState.lockedUntil && Date.now() < rateLimitState.lockedUntil) {
+        const secondsRemaining = getRemainingLockTime(rateLimitState.lockedUntil);
+        setLockedUntil(rateLimitState.lockedUntil);
+        showToast(`Too many sign-in attempts. Try again in ${secondsRemaining}s.`, "error");
+        return;
+      }
     }
 
     setLoading(true);
     try {
       if (isSignUp) {
         await signUpEmail(email, password, displayName);
-        showToast("Account created successfully!", "success");
+        setConfirmPassword("");
+        showToast("Verification email sent. Please verify your email before signing in.", "success");
+        setIsSignUp(false);
       } else {
         await signInEmail(email, password);
+        saveRateLimitState({ attempts: [] });
+        setLockedUntil(null);
         showToast("Logged in successfully!", "success");
       }
-      navigate("/dashboard");
+      if (!isSignUp) {
+        navigate("/dashboard");
+      }
     } catch (error) {
       console.error(error);
-      showToast(error.message || "Authentication failed. Please try again.", "error");
+      if (!isSignUp) {
+        const now = Date.now();
+        const currentState = getRateLimitState();
+        const recentAttempts = (currentState.attempts || []).filter(
+          (timestamp) => now - timestamp < RATE_LIMIT_WINDOW_MS
+        );
+        const updatedAttempts = [...recentAttempts, now];
+        const nextState = { attempts: updatedAttempts };
+
+        if (updatedAttempts.length >= MAX_SIGN_IN_ATTEMPTS) {
+          nextState.lockedUntil = now + RATE_LIMIT_LOCK_MS;
+          setLockedUntil(nextState.lockedUntil);
+          saveRateLimitState(nextState);
+          showToast("Too many failed sign-in attempts. Please wait 5 minutes.", "error");
+        } else {
+          saveRateLimitState(nextState);
+          showToast(
+            `Authentication failed. ${MAX_SIGN_IN_ATTEMPTS - updatedAttempts.length} sign-in attempts remaining before cooldown.`,
+            "error"
+          );
+        }
+      } else {
+        showToast(error.message || "Authentication failed. Please try again.", "error");
+      }
     } finally {
       setLoading(false);
     }
@@ -150,9 +241,32 @@ export default function Login() {
               </div>
             </div>
 
+            {isSignUp && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Confirm Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-3 w-5 h-5 text-slate-500" />
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Re-enter your password"
+                    disabled={loading}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl pl-11 pr-4 py-3 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 text-sm transition-all"
+                  />
+                </div>
+              </div>
+            )}
+
+            {!isSignUp && lockedUntil && Date.now() < lockedUntil && (
+              <p className="text-xs text-amber-400 font-medium">
+                Sign-in is temporarily locked. Try again in {getRemainingLockTime(lockedUntil)}s.
+              </p>
+            )}
+
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || (!isSignUp && !!lockedUntil && Date.now() < lockedUntil)}
               className="w-full flex items-center justify-center gap-2 mt-4 px-6 py-3.5 text-sm font-semibold text-white bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 rounded-2xl shadow-lg shadow-brand-500/20 active:scale-95 disabled:opacity-50 disabled:pointer-events-none transition-all"
             >
               {loading ? (
@@ -189,7 +303,10 @@ export default function Login() {
           {/* Toggle link */}
           <div className="text-center pt-2">
             <button
-              onClick={() => setIsSignUp(!isSignUp)}
+              onClick={() => {
+                setIsSignUp(!isSignUp);
+                setConfirmPassword("");
+              }}
               className="text-xs font-medium text-brand-400 hover:text-brand-300 transition-colors"
             >
               {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
