@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { Footer } from "../components/Footer";
 import { motion } from "framer-motion";
 import { Brain, Clock, Calendar, BarChart3, ChevronRight, GraduationCap } from "lucide-react";
 
@@ -225,14 +226,7 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="px-6 py-12 border-t border-white/5 max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500">
-        <span>© 2026 Studier App. Built for students who want to excel.</span>
-        <div className="flex gap-4 mt-4 sm:mt-0">
-          <span className="hover:text-slate-300 cursor-pointer">Privacy Policy</span>
-          <span className="hover:text-slate-300 cursor-pointer">Terms of Service</span>
-          <span className="hover:text-slate-300 cursor-pointer">Contact Support</span>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
