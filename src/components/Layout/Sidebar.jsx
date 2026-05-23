@@ -56,12 +56,16 @@ export default function Sidebar({ isOpen, onClose }) {
         {/* Brand Header */}
         <div className="flex items-center justify-between h-16 px-6 border-b border-slate-200/50 dark:border-slate-800/40">
           <Link to="/" className="flex items-center gap-2" onClick={onClose}>
-            <div className="flex items-center justify-center w-9 h-9 rounded-2xl bg-white/80border border-sky-100/80 dark:border-sky-900/30 shadow-[0_10px_24px_rgba(56,189,248,0.08)]">
-              <img src="/logo.png" alt="Studier logo" className="w-6 h-6 object-contain" />
-            </div>
-            <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-500 via-brand-500 to-indigo-500 dark:from-sky-300 dark:via-brand-300 dark:to-indigo-300">
+          <div className="flex items-center justify-center w-15 h-15 rounded-full bg-black/80 border border-sky-100/80 dark:border-sky-900/30 shadow-[0_10px_24px_rgba(56,189,248,0.08)] overflow-hidden">
+            <img
+              src="/logo.png"
+              alt="Studier logo"
+              className="w-12 h-12 object-cover rounded-full"
+            />
+          </div>
+            {/* <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-500 via-brand-500 to-indigo-500 dark:from-sky-300 dark:via-brand-300 dark:to-indigo-300">
               Studier
-            </span>
+            </span> */}
           </Link>
           <button 
             onClick={onClose}

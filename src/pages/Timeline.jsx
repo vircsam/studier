@@ -21,6 +21,27 @@ export default function Timeline() {
   }, [timetables]);
 
   const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  
+  const weekDates = useMemo(() => {
+    const current = new Date();
+    const dayOfWeek = current.getDay(); // 0 is Sunday, 1 is Monday, ..., 6 is Saturday
+    const distanceToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    
+    const monday = new Date(current);
+    monday.setDate(current.getDate() + distanceToMonday);
+    
+    const dates = [];
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    
+    for (let i = 0; i < 7; i++) {
+      const dayDate = new Date(monday);
+      dayDate.setDate(monday.getDate() + i);
+      const dateNum = dayDate.getDate();
+      const month = monthNames[dayDate.getMonth()];
+      dates.push(`${month} ${dateNum}`);
+    }
+    return dates;
+  }, []);
   const HOURS = Array.from({ length: 11 }, (_, i) => i + 8); // 8:00 AM to 6:00 PM (18:00)
   const HOUR_HEIGHT = 76; // px per hour in the timeline grid
 
@@ -45,24 +66,24 @@ export default function Timeline() {
   };
 
   // Helper to calculate card styling based on slot time interval (e.g. "09:00 - 09:45")
-  const calculateSlotPosition = (timeRangeStr, durationMins) => {
+  const calculateSlotPosition = (timeRangeStr, durationMins, isBreak = false) => {
     if (!timeRangeStr) return { isFlexible: true };
     const parts = timeRangeStr.split("-");
     if (parts.length < 1) return { isFlexible: true };
     
     const startDecimal = parseTimeToDecimal(parts[0]);
     if (startDecimal === null) return { isFlexible: true };
-
+ 
     const timelineStartHour = 8; // 8:00 AM
     const durationHours = (Number(durationMins) || 45) / 60;
-
+ 
     const top = (startDecimal - timelineStartHour) * HOUR_HEIGHT;
     const height = durationHours * HOUR_HEIGHT;
-
+ 
     return {
       isFlexible: false,
       top: Math.max(0, top),
-      height: Math.max(35, height) // Minimum height of 35px for readability
+      height: isBreak ? height : Math.max(35, height) // Minimum height of 35px only for study slots
     };
   };
 
@@ -97,7 +118,7 @@ export default function Timeline() {
   // Render a single calendar slot card
   const renderSlotCard = (slot, idx, dayName, isMobileView) => {
     const isBreak = slot.subject === "Break";
-    const pos = calculateSlotPosition(slot.time, slot.duration);
+    const pos = calculateSlotPosition(slot.time, slot.duration, isBreak);
     
     if (pos.isFlexible) {
       return null; // Rendered separately or skipped
@@ -206,7 +227,7 @@ export default function Timeline() {
           
           {/* Mobile view day select tabs */}
           <div className="flex md:hidden gap-1.5 overflow-x-auto pb-4 mb-2 scrollbar-none border-b border-slate-200/50 dark:border-slate-800/40">
-            {DAYS.map((day) => (
+            {DAYS.map((day, idx) => (
               <button
                 key={day}
                 onClick={() => setMobileActiveDay(day)}
@@ -216,7 +237,7 @@ export default function Timeline() {
                     : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-900/60 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-400"
                 }`}
               >
-                {day.substring(0, 3)}
+                {day.substring(0, 3)} ({weekDates[idx]})
               </button>
             ))}
           </div>
@@ -225,7 +246,7 @@ export default function Timeline() {
           <div className="relative flex overflow-x-auto scrollbar-none" style={{ minHeight: `${HOURS.length * HOUR_HEIGHT + 40}px` }}>
             
             {/* Left Axis: Hour Labels */}
-            <div className="flex-shrink-0 w-12 sm:w-16 border-r border-slate-200/40 dark:border-slate-800/60 flex flex-col pt-9 pr-2 text-right">
+            <div className="flex-shrink-0 w-12 sm:w-16 border-r border-slate-200/40 dark:border-slate-800/60 flex flex-col pt-10 pr-2 text-right">
               {HOURS.map((h, i) => {
                 const isPM = h >= 12;
                 const formattedHour = h > 12 ? h - 12 : h;
@@ -246,7 +267,7 @@ export default function Timeline() {
             <div className="flex-1 min-w-[650px] md:min-w-0 grid grid-cols-1 md:grid-cols-7 relative">
               
               {/* Horizontal Gridlines (Background) */}
-              <div className="absolute inset-0 pt-9 pointer-events-none z-0">
+              <div className="absolute inset-0 pt-10 pointer-events-none z-0">
                 {HOURS.map((_, i) => (
                   <div
                     key={i}
@@ -257,20 +278,21 @@ export default function Timeline() {
               </div>
 
               {/* Columns Render */}
-              {DAYS.map((dayName) => {
+              {DAYS.map((dayName, index) => {
                 const dayObj = activeTimetable.schedule?.find(s => s.day === dayName);
                 const isMobileHidden = mobileActiveDay !== dayName;
 
                 return (
                   <div
                     key={dayName}
-                    className={`relative pt-9 h-full border-r border-slate-200/20 dark:border-slate-800/20 z-10 md:block ${
+                    className={`relative pt-10 h-full border-r border-slate-200/20 dark:border-slate-800/20 z-10 md:block ${
                       isMobileHidden ? "hidden" : "block"
                     }`}
                   >
-                    {/* Header: Day Name */}
-                    <div className="absolute top-0 inset-x-0 h-8 flex flex-col items-center justify-center border-b border-slate-200/50 dark:border-slate-800/40 bg-white/40 dark:bg-slate-950/40 backdrop-blur-sm">
-                      <span className="text-xs font-bold text-slate-700 dark:text-slate-350">{dayName}</span>
+                    {/* Header: Day Name & Date */}
+                    <div className="absolute top-0 inset-x-0 h-9 flex flex-col items-center justify-center border-b border-slate-200/50 dark:border-slate-800/40 bg-white/40 dark:bg-slate-950/40 backdrop-blur-sm">
+                      <span className="text-[10px] font-extrabold text-slate-700 dark:text-slate-350 leading-tight">{dayName}</span>
+                      <span className="text-[9px] font-bold text-brand-550 dark:text-brand-400 leading-none">{weekDates[index]}</span>
                     </div>
 
                     {/* Slot Cards List */}

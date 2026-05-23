@@ -43,12 +43,16 @@ export default function Landing() {
       {/* Navbar Header */}
       <header className="sticky top-0 z-50 flex items-center justify-between h-20 px-6 max-w-7xl mx-auto backdrop-blur-xl border-b border-white/10 bg-slate-950/35">
         <div className="flex items-center gap-2">
-          <div className="flex items-center justify-center w-10 h-10 rounded-2xl bg-white/80 border border-sky-100/20 shadow-lg shadow-sky-500/15 backdrop-blur-md">
-            <img src="/logo.png" alt="Studier logo" className="w-7 h-7 object-contain" />
+        <div className="flex items-center justify-center w-15 h-15 rounded-full bg-black/80 border border-sky-100/80 dark:border-sky-900/30 shadow-[0_10px_24px_rgba(56,189,248,0.08)] overflow-hidden">
+            <img
+              src="/logo.png"
+              alt="Studier logo"
+              className="w-14 h-14 object-cover rounded-full"
+            />
           </div>
-          <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-300 via-brand-300 to-indigo-300">
-            Studier
-          </span>
+          <span className="text-2xl font-extrabold tracking-tight text-white">
+          Studier
+        </span>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-4">
