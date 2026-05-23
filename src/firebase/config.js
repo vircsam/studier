@@ -12,40 +12,11 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-// Check if config keys are provided and not default placeholders
-const isConfigValid = 
-  firebaseConfig.apiKey && 
-  firebaseConfig.apiKey !== "" &&
-  firebaseConfig.apiKey !== "undefined" &&
-  firebaseConfig.projectId &&
-  firebaseConfig.projectId !== "" &&
-  firebaseConfig.projectId !== "undefined";
-
-let app;
-let auth = null;
-let db = null;
-let storage = null;
-let isMockMode = true;
-
-if (isConfigValid) {
-  try {
-    if (!getApps().length) {
-      app = initializeApp(firebaseConfig);
-    } else {
-      app = getApps()[0];
-    }
-    auth = getAuth(app);
-    db = getFirestore(app);
-    storage = getStorage(app);
-    isMockMode = false;
-    console.log("Studier: Firebase initialized successfully in live database mode.");
-  } catch (error) {
-    console.error("Studier: Firebase initialization error, falling back to local Mock Mode:", error);
-    isMockMode = true;
-  }
-} else {
-  console.log("Studier: No Firebase environment variables found. Running in offline-friendly Mock Mode (Local Storage).");
-}
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+const isMockMode = false;
 
 export { auth, db, storage, isMockMode };
 export default app;

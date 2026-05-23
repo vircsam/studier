@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { useStore } from "../store/useStore";
+import { useFirestore } from "../hooks/useFirestore";
 import { useToast } from "../context/ToastContext";
 import { 
   Calendar, Plus, Trash2, Clock, Sparkles, AlertTriangle, 
@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 
 export default function Timetable() {
-  const { timetables, saveTimetable } = useStore();
+  const { timetables, saveTimetable } = useFirestore();
   const { showToast } = useToast();
 
   // Subjects input state

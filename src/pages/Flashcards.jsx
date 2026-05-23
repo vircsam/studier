@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { useStore } from "../store/useStore";
+import { useFirestore } from "../hooks/useFirestore";
 import { useToast } from "../context/ToastContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -15,7 +15,7 @@ export default function Flashcards() {
     deleteFlashcard, 
     reviewFlashcard,
     isMockMode
-  } = useStore();
+  } = useFirestore();
   
   const { showToast } = useToast();
 

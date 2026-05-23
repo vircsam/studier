@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { useStore } from "../store/useStore";
+import { useAuth } from "../hooks/useAuth";
+import { useFirestore } from "../hooks/useFirestore";
 import { 
   Award, 
   BookOpen, 
@@ -22,15 +23,15 @@ import {
 } from "recharts";
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const { 
-    user, 
     flashcards, 
     notes, 
     studySessions, 
     timetables,
     streak,
     productivityScore
-  } = useStore();
+  } = useFirestore();
 
   // 1. Calculate cards due today
   const dueCards = useMemo(() => {

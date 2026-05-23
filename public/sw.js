@@ -34,8 +34,12 @@ self.addEventListener("activate", (e) => {
 
 // Fetch Interception
 self.addEventListener("fetch", (e) => {
-  // Only handle GET requests and avoid API calls
-  if (e.request.method !== "GET" || e.request.url.includes("/api/")) {
+  // Only intercept GET requests from the same origin, avoiding API calls
+  if (
+    e.request.method !== "GET" || 
+    !e.request.url.startsWith(self.location.origin) ||
+    e.request.url.includes("/api/")
+  ) {
     return;
   }
 

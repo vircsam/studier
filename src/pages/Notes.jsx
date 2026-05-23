@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { useStore } from "../store/useStore";
+import { useFirestore } from "../hooks/useFirestore";
 import { useToast } from "../context/ToastContext";
 import { 
   FileText, Search, Plus, Trash2, Tag, BookOpen, 
@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 
 export default function Notes() {
-  const { notes, addNote, updateNote, deleteNote } = useStore();
+  const { notes, addNote, updateNote, deleteNote } = useFirestore();
   const { showToast } = useToast();
 
   const [activeNoteId, setActiveNoteId] = useState(null);

@@ -1,6 +1,8 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useStore } from "../../store/useStore";
+import { useAuth } from "../../hooks/useAuth";
+import { useFirestore } from "../../hooks/useFirestore";
 import { 
   LayoutDashboard, 
   BookOpen, 
@@ -17,7 +19,9 @@ import {
 } from "lucide-react";
 
 export default function Sidebar({ isOpen, onClose }) {
-  const { user, logout, theme, toggleTheme, isMockMode, streak } = useStore();
+  const { user, logout } = useAuth();
+  const { streak, isMockMode } = useFirestore();
+  const { theme, toggleTheme } = useStore();
   const location = useLocation();
 
   const menuItems = [
@@ -123,9 +127,18 @@ export default function Sidebar({ isOpen, onClose }) {
           {user ? (
             <div className="space-y-3">
               <div className="flex items-center gap-3 px-2 py-1">
-                <div className="flex items-center justify-center w-9 h-9 rounded-full bg-brand-500 text-white font-bold text-sm uppercase">
-                  {user.displayName ? user.displayName.charAt(0) : user.email.charAt(0)}
-                </div>
+                {user.photoURL ? (
+                  <img 
+                    src={user.photoURL} 
+                    alt={user.displayName || "User"} 
+                    className="w-9 h-9 rounded-full object-cover border border-slate-200/50 dark:border-slate-800/40"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center w-9 h-9 rounded-full bg-brand-500 text-white font-bold text-sm uppercase">
+                    {user.displayName ? user.displayName.charAt(0) : user.email.charAt(0)}
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate text-slate-800 dark:text-slate-200">
                     {user.displayName || "Student"}

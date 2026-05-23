@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useStore } from "../store/useStore";
+import { useFirestore } from "../hooks/useFirestore";
 import { useToast } from "../context/ToastContext";
 import { 
   BarChart3, Award, TrendingUp, Sparkles, BookOpen, Clock, 
@@ -11,7 +11,7 @@ import {
 } from "recharts";
 
 export default function Analytics() {
-  const { studySessions, flashcards, streak, productivityScore } = useStore();
+  const { studySessions, flashcards, streak, productivityScore } = useFirestore();
   const { showToast } = useToast();
 
   const [loading, setLoading] = useState(true);

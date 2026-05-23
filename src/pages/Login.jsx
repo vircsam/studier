@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useStore } from "../store/useStore";
+import { useAuth } from "../hooks/useAuth";
+import { useFirestore } from "../hooks/useFirestore";
 import { useToast } from "../context/ToastContext";
 import { motion } from "framer-motion";
 import { Sparkles, Mail, Lock, User, ArrowRight, Database } from "lucide-react";
 
 export default function Login() {
-  const { signInEmail, signUpEmail, signInGoogle, isMockMode } = useStore();
+  const { signInEmail, signUpEmail, signInGoogle } = useAuth();
+  const { isMockMode } = useFirestore();
   const { showToast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();

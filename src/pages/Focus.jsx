@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { useStore } from "../store/useStore";
+import { useFirestore } from "../hooks/useFirestore";
 import { useToast } from "../context/ToastContext";
 import { 
   Play, Pause, RotateCcw, Timer, Award, Coffee, BookOpen, 
@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 
 export default function Focus() {
-  const { flashcards, logStudySession, studySessions } = useStore();
+  const { flashcards, logStudySession, studySessions } = useFirestore();
   const { showToast } = useToast();
 
   const [mode, setMode] = useState("focus"); // focus, short_break, long_break
