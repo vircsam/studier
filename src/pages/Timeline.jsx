@@ -12,30 +12,39 @@ export default function Timeline() {
   const { showToast } = useToast();
   const navigate = useNavigate();
 
-  // Active day view for mobile view (single day view)
-  const [mobileActiveDay, setMobileActiveDay] = useState("Monday");
+  // Active day view for mobile view (single day view, defaults dynamically to today)
+  const [mobileActiveDay, setMobileActiveDay] = useState(() => {
+    const DAYS_OF_WEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    return DAYS_OF_WEEK[new Date().getDay()];
+  });
 
   // Get active timetable
   const activeTimetable = useMemo(() => {
     return timetables[0] || null;
   }, [timetables]);
 
-  const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  // Compute rolling days starting from today
+  const DAYS = useMemo(() => {
+    const DAYS_OF_WEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const days = [];
+    const current = new Date();
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(current);
+      d.setDate(current.getDate() + i);
+      days.push(DAYS_OF_WEEK[d.getDay()]);
+    }
+    return days;
+  }, []);
   
+  // Compute rolling dates starting from today
   const weekDates = useMemo(() => {
     const current = new Date();
-    const dayOfWeek = current.getDay(); // 0 is Sunday, 1 is Monday, ..., 6 is Saturday
-    const distanceToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-    
-    const monday = new Date(current);
-    monday.setDate(current.getDate() + distanceToMonday);
-    
     const dates = [];
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     
     for (let i = 0; i < 7; i++) {
-      const dayDate = new Date(monday);
-      dayDate.setDate(monday.getDate() + i);
+      const dayDate = new Date(current);
+      dayDate.setDate(current.getDate() + i);
       const dateNum = dayDate.getDate();
       const month = monthNames[dayDate.getMonth()];
       dates.push(`${month} ${dateNum}`);

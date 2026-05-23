@@ -32,30 +32,40 @@ export default function Timetable() {
   const [selectedGenerateDay, setSelectedGenerateDay] = useState("All Days");
   const [generating, setGenerating] = useState(false);
 
-  // Active day view for output
-  const [activeDayTab, setActiveDayTab] = useState("Monday");
+  // Active day view for output (defaults dynamically to today's day of the week)
+  const [activeDayTab, setActiveDayTab] = useState(() => {
+    const DAYS_OF_WEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    return DAYS_OF_WEEK[new Date().getDay()];
+  });
 
-  // Calculate calendar dates for the week
+  // Calculate calendar dates for the week rolling from today
   const weekDates = useMemo(() => {
     const current = new Date();
-    const dayOfWeek = current.getDay(); // 0 is Sunday, 1 is Monday, ..., 6 is Saturday
-    const distanceToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-    
-    const monday = new Date(current);
-    monday.setDate(current.getDate() + distanceToMonday);
-    
     const dates = {};
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     
-    const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    const DAYS_OF_WEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     for (let i = 0; i < 7; i++) {
-      const dayDate = new Date(monday);
-      dayDate.setDate(monday.getDate() + i);
+      const dayDate = new Date(current);
+      dayDate.setDate(current.getDate() + i);
       const dateNum = dayDate.getDate();
       const month = monthNames[dayDate.getMonth()];
-      dates[DAYS[i]] = `${month} ${dateNum}`;
+      dates[DAYS_OF_WEEK[dayDate.getDay()]] = `${month} ${dateNum}`;
     }
     return dates;
+  }, []);
+
+  // Compute rolling days order starting from today
+  const rollingDaysOrder = useMemo(() => {
+    const DAYS_OF_WEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const days = [];
+    const current = new Date();
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(current);
+      d.setDate(current.getDate() + i);
+      days.push(DAYS_OF_WEEK[d.getDay()]);
+    }
+    return days;
   }, []);
 
   // Edit subject index state
@@ -66,6 +76,14 @@ export default function Timetable() {
   const activeTimetable = useMemo(() => {
     return timetables[0] || null;
   }, [timetables]);
+
+  // Sort schedule in rolling order starting from today
+  const sortedSchedule = useMemo(() => {
+    if (!activeTimetable || !activeTimetable.schedule) return [];
+    return [...activeTimetable.schedule].sort((a, b) => {
+      return rollingDaysOrder.indexOf(a.day) - rollingDaysOrder.indexOf(b.day);
+    });
+  }, [activeTimetable, rollingDaysOrder]);
 
   // Sync inputs with active timetable when loaded
   useEffect(() => {
@@ -89,7 +107,7 @@ export default function Timetable() {
   const [newSlotSubject, setNewSlotSubject] = useState("");
   const [newSlotType, setNewSlotType] = useState("Focus Session");
   const [newSlotDuration, setNewSlotDuration] = useState(45);
-  const [newSlotTime, setNewSlotTime] = useState("");
+  const [newSlotStartTime, setNewSlotStartTime] = useState("09:00");
 
   // Handle editing a slot
   const handleUpdateSlot = async (e) => {
@@ -142,13 +160,23 @@ export default function Timetable() {
     }
 
     try {
+      // Calculate start and end time interval using time picker values
+      const startTimeVal = newSlotStartTime || "09:00";
+      const [startHour, startMin] = startTimeVal.split(":").map(Number);
+      const totalMin = startHour * 60 + startMin + Number(newSlotDuration);
+      const endHour = Math.floor(totalMin / 60) % 24;
+      const endMin = totalMin % 60;
+      const formattedStartTime = `${startHour.toString().padStart(2, "0")}:${startMin.toString().padStart(2, "0")}`;
+      const formattedEndTime = `${endHour.toString().padStart(2, "0")}:${endMin.toString().padStart(2, "0")}`;
+      const computedTimeInterval = `${formattedStartTime} - ${formattedEndTime}`;
+
       const updatedSchedule = activeTimetable.schedule.map(dayObj => {
         if (dayObj.day === activeDayTab) {
           const newSlot = {
             subject: newSlotSubject.trim(),
             type: newSlotType.trim() || "Custom Slot",
             duration: Number(newSlotDuration) || 45,
-            time: newSlotTime.trim() || "Flexible",
+            time: computedTimeInterval,
             completed: false
           };
           return { ...dayObj, slots: [...dayObj.slots, newSlot] };
@@ -166,7 +194,7 @@ export default function Timetable() {
       setNewSlotSubject("");
       setNewSlotType("Focus Session");
       setNewSlotDuration(45);
-      setNewSlotTime("");
+      setNewSlotStartTime("09:00");
     } catch (err) {
       console.error(err);
       showToast("Failed to add slot", "error");
@@ -196,6 +224,58 @@ export default function Timetable() {
       console.error(err);
       showToast("Failed to delete slot", "error");
     }
+  };
+
+  // Handle clearing all tasks/slots for a specific day
+  const handleClearDayTasks = async (day) => {
+    if (!activeTimetable) return;
+    if (!confirm(`Are you sure you want to remove all study slots and tasks for ${day}?`)) return;
+
+    try {
+      const updatedSchedule = activeTimetable.schedule.map(dayObj => {
+        if (dayObj.day === day) {
+          return { ...dayObj, slots: [] };
+        }
+        return dayObj;
+      });
+
+      await saveTimetable({
+        ...activeTimetable,
+        schedule: updatedSchedule
+      });
+
+      showToast(`Cleared all tasks for ${day}`, "info");
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to clear tasks for the day", "error");
+    }
+  };
+
+  // Helper to extract HH:MM start time from time interval (e.g. "09:00 - 09:45")
+  const getStartTimeFromInterval = (timeIntervalStr) => {
+    if (!timeIntervalStr) return "09:00";
+    const parts = timeIntervalStr.split("-");
+    if (parts.length > 0) {
+      const match = parts[0].trim().match(/(\d{2}):(\d{2})/);
+      if (match) return `${match[1]}:${match[2]}`;
+    }
+    return "09:00";
+  };
+
+  // Helper to dynamically update duration and time range when editing start time or duration
+  const handleUpdateEditingSlotTime = (startTime, duration) => {
+    if (!editingSlot) return;
+    const [startHour, startMin] = startTime.split(":").map(Number);
+    const totalMin = startHour * 60 + startMin + Number(duration);
+    const endHour = Math.floor(totalMin / 60) % 24;
+    const endMin = totalMin % 60;
+    const formattedStartTime = `${startHour.toString().padStart(2, "0")}:${startMin.toString().padStart(2, "0")}`;
+    const formattedEndTime = `${endHour.toString().padStart(2, "0")}:${endMin.toString().padStart(2, "0")}`;
+    setEditingSlot({
+      ...editingSlot,
+      duration: Number(duration),
+      time: `${formattedStartTime} - ${formattedEndTime}`
+    });
   };
 
   // Handle toggling slot completion
@@ -640,13 +720,20 @@ export default function Timetable() {
                         setNewSlotSubject("");
                         setNewSlotType("Focus Session");
                         setNewSlotDuration(45);
-                        setNewSlotTime("");
+                        setNewSlotStartTime("09:00");
                         setShowAddSlotModal(true);
                       }}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-brand-600 dark:text-brand-400 bg-brand-500/10 border border-brand-500/20 hover:bg-brand-500/20 transition-all cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>Add Slot</span>
+                    </button>
+                    <button
+                      onClick={() => handleClearDayTasks(activeDayTab)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-455 bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500/20 transition-all cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Clear Day</span>
                     </button>
                     <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
                       <CheckCircle2 className="w-4 h-4" />
@@ -657,7 +744,7 @@ export default function Timetable() {
 
                 {/* Day tabs row */}
                 <div className="flex gap-1.5 overflow-x-auto py-4 scrollbar-none">
-                  {activeTimetable.schedule?.map((dayObj, i) => (
+                  {sortedSchedule?.map((dayObj, i) => (
                     <button
                       key={i}
                       onClick={() => setActiveDayTab(dayObj.day)}
@@ -846,19 +933,18 @@ export default function Timetable() {
                   <input
                     type="number"
                     value={editingSlot.duration}
-                    onChange={(e) => setEditingSlot({ ...editingSlot, duration: Number(e.target.value) })}
+                    onChange={(e) => handleUpdateEditingSlotTime(getStartTimeFromInterval(editingSlot.time), Number(e.target.value))}
                     placeholder="45"
-                    className="w-full bg-slate-100/50 dark:bg-slate-950/40 border border-slate-200/50 dark:border-slate-800/40 rounded-xl px-3.5 py-2 text-sm outline-none focus:border-brand-500"
+                    className="w-full bg-slate-100/50 dark:bg-slate-950/40 border border-slate-200/50 dark:border-slate-800/40 rounded-xl px-3.5 py-2 text-sm outline-none focus:border-brand-500 dark:text-slate-200"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-500">Time Interval</label>
+                  <label className="text-xs font-semibold text-slate-500">Start Time</label>
                   <input
-                    type="text"
-                    value={editingSlot.time}
-                    onChange={(e) => setEditingSlot({ ...editingSlot, time: e.target.value })}
-                    placeholder="e.g. 09:00 - 09:45"
-                    className="w-full bg-slate-100/50 dark:bg-slate-950/40 border border-slate-200/50 dark:border-slate-800/40 rounded-xl px-3.5 py-2 text-sm outline-none focus:border-brand-500"
+                    type="time"
+                    value={getStartTimeFromInterval(editingSlot.time)}
+                    onChange={(e) => handleUpdateEditingSlotTime(e.target.value, editingSlot.duration)}
+                    className="w-full bg-slate-100/50 dark:bg-slate-950/40 border border-slate-200/50 dark:border-slate-800/40 rounded-xl px-3.5 py-2 text-sm outline-none focus:border-brand-500 dark:text-slate-200 cursor-pointer"
                   />
                 </div>
               </div>
@@ -923,13 +1009,12 @@ export default function Timetable() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-500">Time (e.g. 09:00 - 09:45)</label>
+                  <label className="text-xs font-semibold text-slate-500">Start Time</label>
                   <input
-                    type="text"
-                    value={newSlotTime}
-                    onChange={(e) => setNewSlotTime(e.target.value)}
-                    placeholder="e.g. 14:00 - 14:45"
-                    className="w-full bg-slate-100/50 dark:bg-slate-950/40 border border-slate-200/50 dark:border-slate-800/40 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-brand-500"
+                    type="time"
+                    value={newSlotStartTime}
+                    onChange={(e) => setNewSlotStartTime(e.target.value)}
+                    className="w-full bg-slate-100/50 dark:bg-slate-950/40 border border-slate-200/50 dark:border-slate-800/40 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-brand-500 dark:text-slate-250 cursor-pointer"
                   />
                 </div>
               </div>

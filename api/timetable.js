@@ -91,8 +91,15 @@ export default function handler(req, res) {
     // Shuffle slot pool using simple seedless shuffle
     slotPool.sort(() => Math.random() - 0.5);
 
-    // 3. Generate schedule days
-    const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    // 3. Generate schedule days starting from today (rolling week)
+    const DAYS_OF_WEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const DAYS = [];
+    const current = new Date();
+    for (let i = 0; i < 7; i++) {
+      const dayDate = new Date(current);
+      dayDate.setDate(current.getDate() + i);
+      DAYS.push(DAYS_OF_WEEK[dayDate.getDay()]);
+    }
     const schedule = [];
 
     const startHour = 9; // study starts at 9:00 AM
