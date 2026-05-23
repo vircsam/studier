@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useFirestore } from "../hooks/useFirestore";
 import { useToast } from "../context/ToastContext";
 import { 
@@ -7,6 +8,7 @@ import {
 } from "lucide-react";
 
 export default function Timetable() {
+  const navigate = useNavigate();
   const { timetables, saveTimetable } = useFirestore();
   const { showToast } = useToast();
 
@@ -83,7 +85,8 @@ export default function Timetable() {
                 subject: editingSlot.subject.trim(),
                 type: editingSlot.type.trim() || "Study Slot",
                 duration: Number(editingSlot.duration) || 45,
-                time: editingSlot.time.trim() || s.time
+                time: editingSlot.time.trim() || s.time,
+                completed: s.completed || false
               };
             }
             return s;
@@ -121,7 +124,8 @@ export default function Timetable() {
             subject: newSlotSubject.trim(),
             type: newSlotType.trim() || "Custom Slot",
             duration: Number(newSlotDuration) || 45,
-            time: newSlotTime.trim() || "Flexible"
+            time: newSlotTime.trim() || "Flexible",
+            completed: false
           };
           return { ...dayObj, slots: [...dayObj.slots, newSlot] };
         }
@@ -167,6 +171,34 @@ export default function Timetable() {
     } catch (err) {
       console.error(err);
       showToast("Failed to delete slot", "error");
+    }
+  };
+
+  // Handle toggling slot completion
+  const handleToggleCompleteSlot = async (day, index) => {
+    try {
+      const updatedSchedule = activeTimetable.schedule.map(dayObj => {
+        if (dayObj.day === day) {
+          const updatedSlots = dayObj.slots.map((s, idx) => {
+            if (idx === index) {
+              return { ...s, completed: !s.completed };
+            }
+            return s;
+          });
+          return { ...dayObj, slots: updatedSlots };
+        }
+        return dayObj;
+      });
+
+      await saveTimetable({
+        ...activeTimetable,
+        schedule: updatedSchedule
+      });
+
+      showToast("Slot completion status updated", "success");
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to update slot status", "error");
     }
   };
 
@@ -577,25 +609,56 @@ export default function Timetable() {
                       return (
                         <div 
                           key={idx}
+                          onClick={() => {
+                            if (!isBreak) {
+                              navigate("/pomodoro", { state: { duration: slot.duration, subject: slot.subject } });
+                            }
+                          }}
                           className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm transition-all ${
                             isBreak 
                               ? "bg-slate-50/50 dark:bg-slate-950/20 border-dashed border-slate-200 dark:border-slate-850 opacity-60" 
-                              : "bg-slate-100/50 dark:bg-slate-900/40 border-slate-200/50 dark:border-slate-800/30 hover:border-brand-500/20"
+                              : `bg-slate-100/50 dark:bg-slate-900/40 border-slate-200/50 dark:border-slate-800/30 cursor-pointer hover:border-brand-500/40 hover:bg-slate-200/20 dark:hover:bg-slate-900/60 ${
+                                  slot.completed ? "opacity-80 border-emerald-500/20" : ""
+                                }`
                           }`}
                         >
                           <div className="flex items-center gap-3">
+                            {!isBreak && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleToggleCompleteSlot(activeDayTab, idx);
+                                }}
+                                className={`p-1 rounded-lg transition-colors cursor-pointer flex-shrink-0 ${
+                                  slot.completed 
+                                    ? "text-emerald-500 hover:text-slate-400" 
+                                    : "text-slate-350 hover:text-emerald-500"
+                                }`}
+                                title={slot.completed ? "Mark Incomplete" : "Mark Completed"}
+                              >
+                                <CheckCircle2 className={`w-5 h-5 ${slot.completed ? "fill-emerald-500/10" : ""}`} />
+                              </button>
+                            )}
                             <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
                               isBreak 
                                 ? "bg-slate-200 dark:bg-slate-800 text-slate-400" 
-                                : "bg-brand-500/10 text-brand-500"
+                                : slot.completed
+                                  ? "bg-emerald-500/10 text-emerald-500"
+                                  : "bg-brand-500/10 text-brand-500"
                             }`}>
                               {isBreak ? <Clock className="w-4 h-4" /> : <Calendar className="w-4 h-4" />}
                             </div>
-                            <div className="space-y-0.5">
-                              <span className={`font-bold block ${isBreak ? "text-slate-500" : "text-slate-800 dark:text-slate-200"}`}>
+                            <div className="space-y-0.5 min-w-0">
+                              <span className={`font-bold block truncate ${
+                                isBreak 
+                                  ? "text-slate-500" 
+                                  : slot.completed
+                                    ? "text-slate-400 dark:text-slate-500 line-through decoration-slate-400/50"
+                                    : "text-slate-800 dark:text-slate-200"
+                              }`}>
                                 {slot.subject}
                               </span>
-                              <span className="text-xs text-slate-400">{slot.type}</span>
+                              <span className="text-xs text-slate-400 truncate block">{slot.type}</span>
                             </div>
                           </div>
 
@@ -604,27 +667,35 @@ export default function Timetable() {
                             <span className={`text-xs font-mono font-semibold px-2.5 py-1 rounded-full ${
                               isBreak 
                                 ? "bg-slate-200 dark:bg-slate-800 text-slate-500"
-                                : "bg-brand-500/10 text-brand-600 dark:text-brand-400"
+                                : slot.completed
+                                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                                  : "bg-brand-500/10 text-brand-600 dark:text-brand-400"
                             }`}>
                               {slot.time}
                             </span>
                             <div className="flex items-center gap-1.5 pl-2 border-l border-slate-200/40 dark:border-slate-800/60">
                               <button
-                                onClick={() => setEditingSlot({
-                                  day: activeDayTab,
-                                  index: idx,
-                                  subject: slot.subject,
-                                  type: slot.type,
-                                  duration: slot.duration,
-                                  time: slot.time
-                                })}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingSlot({
+                                    day: activeDayTab,
+                                    index: idx,
+                                    subject: slot.subject,
+                                    type: slot.type,
+                                    duration: slot.duration,
+                                    time: slot.time
+                                  });
+                                }}
                                 className="p-1 rounded text-slate-400 hover:text-brand-500 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors cursor-pointer"
                                 title="Edit Slot"
                               >
                                 <Edit2 className="w-3.5 h-3.5" />
                               </button>
                               <button
-                                onClick={() => handleDeleteSlot(activeDayTab, idx)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteSlot(activeDayTab, idx);
+                                }}
                                 className="p-1 rounded text-slate-400 hover:text-rose-500 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors cursor-pointer"
                                 title="Delete Slot"
                               >

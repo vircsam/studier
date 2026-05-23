@@ -138,7 +138,8 @@ export default function handler(req, res) {
           time: `${startStr} - ${endStr}`,
           subject,
           type,
-          duration: 45
+          duration: 45,
+          completed: false
         });
 
         // Break slot
@@ -150,7 +151,8 @@ export default function handler(req, res) {
           time: `${breakStartStr} - ${breakEndStr}`,
           subject: "Break",
           type: "Rest Break",
-          duration: 15
+          duration: 15,
+          completed: false
         });
       }
 

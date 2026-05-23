@@ -9,6 +9,7 @@ const Login = lazy(() => import("./pages/Login"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Flashcards = lazy(() => import("./pages/Flashcards"));
 const Timetable = lazy(() => import("./pages/Timetable"));
+const Timeline = lazy(() => import("./pages/Timeline"));
 const Notes = lazy(() => import("./pages/Notes"));
 const Focus = lazy(() => import("./pages/Focus"));
 const Analytics = lazy(() => import("./pages/Analytics"));
@@ -66,6 +67,14 @@ function App() {
               element={
                 <AppLayout title="Timetable Routine">
                   <Timetable />
+                </AppLayout>
+              } 
+            />
+            <Route 
+              path="/timeline" 
+              element={
+                <AppLayout title="Timeline Breakdown">
+                  <Timeline />
                 </AppLayout>
               } 
             />

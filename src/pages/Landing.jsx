@@ -51,18 +51,18 @@ export default function Landing() {
           </span>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <Link
             to="/login"
-            className="px-4 py-2 text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+            className="px-2.5 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold text-slate-300 hover:text-white hover:bg-white/5 rounded-xl transition-all whitespace-nowrap"
           >
             Sign In
           </Link>
           <Link
             to="/login?signup=true"
-            className="px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-sky-500 via-brand-500 to-indigo-500 hover:from-sky-400 hover:via-brand-400 hover:to-indigo-400 rounded-xl shadow-lg shadow-sky-500/20 hover:scale-[1.02] active:scale-95 transition-all"
+            className="px-3 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-sky-500 via-brand-500 to-indigo-500 hover:from-sky-400 hover:via-brand-400 hover:to-indigo-400 rounded-xl shadow-lg shadow-sky-500/20 hover:scale-[1.02] active:scale-95 transition-all whitespace-nowrap"
           >
-            Get Started Free
+            Get Started
           </Link>
         </div>
       </header>
@@ -118,30 +118,30 @@ export default function Landing() {
         <motion.div
           variants={floatAnimation}
           animate="animate"
-          className="mt-16 w-full max-w-5xl rounded-3xl overflow-hidden border border-sky-200/10 bg-slate-950/55 p-4 shadow-[0_24px_80px_rgba(3,8,20,0.55)]"
+          className="mt-16 w-full max-w-5xl rounded-3xl overflow-hidden border border-sky-200/10 bg-slate-950/55 p-4 shadow-[0_24px_80px_rgba(3,8,20,0.55)] will-change-transform"
         >
           <div className="flex items-center gap-2 pb-3 border-b border-white/5 px-2">
             <div className="w-3.5 h-3.5 rounded-full bg-rose-500/60" />
             <div className="w-3.5 h-3.5 rounded-full bg-amber-500/60" />
             <div className="w-3.5 h-3.5 rounded-full bg-emerald-500/60" />
-            <span className="text-xs text-slate-500 ml-2 font-mono">https://studier.vercel.app/dashboard</span>
+            <span className="text-[10px] sm:text-xs text-slate-500 ml-2 font-mono truncate">https://studier.vercel.app/dashboard</span>
           </div>
-          <div className="aspect-[16/9] bg-[linear-gradient(135deg,_rgba(10,25,47,0.96),_rgba(8,17,31,0.92))] flex items-center justify-center p-8">
-            <div className="grid grid-cols-3 gap-4 w-full h-full max-w-4xl text-left">
-              <div className="col-span-2 rounded-2xl bg-white/5 border border-white/5 p-5 space-y-4">
+          <div className="aspect-auto md:aspect-[16/9] py-6 md:py-0 bg-[linear-gradient(135deg,_rgba(10,25,47,0.96),_rgba(8,17,31,0.92))] flex items-center justify-center p-4 sm:p-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full h-full max-w-4xl text-left">
+              <div className="col-span-1 md:col-span-2 rounded-2xl bg-white/5 border border-white/5 p-4 sm:p-5 space-y-4">
                 <div className="h-6 w-1/3 rounded-lg bg-white/10" />
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="h-20 rounded-xl bg-white/5 border border-white/5 p-3 flex flex-col justify-between">
-                    <span className="text-xs text-slate-500">Streak</span>
-                    <span className="text-xl font-bold text-amber-500">5 Days 🔥</span>
+                <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                  <div className="h-16 sm:h-20 rounded-xl bg-white/5 border border-white/5 p-2 sm:p-3 flex flex-col justify-between">
+                    <span className="text-[9px] sm:text-xs text-slate-500 truncate">Streak</span>
+                    <span className="text-xs sm:text-xl font-bold text-amber-500 truncate">5 Days 🔥</span>
                   </div>
-                  <div className="h-20 rounded-xl bg-white/5 border border-white/5 p-3 flex flex-col justify-between">
-                    <span className="text-xs text-slate-500">Due Flashcards</span>
-                    <span className="text-xl font-bold text-brand-400">12 Cards 📚</span>
+                  <div className="h-16 sm:h-20 rounded-xl bg-white/5 border border-white/5 p-2 sm:p-3 flex flex-col justify-between">
+                    <span className="text-[9px] sm:text-xs text-slate-500 truncate">Due Cards</span>
+                    <span className="text-xs sm:text-xl font-bold text-brand-400 truncate">12 Cards 📚</span>
                   </div>
-                  <div className="h-20 rounded-xl bg-white/5 border border-white/5 p-3 flex flex-col justify-between">
-                    <span className="text-xs text-slate-500">Study Score</span>
-                    <span className="text-xl font-bold text-emerald-400">92/100 🎯</span>
+                  <div className="h-16 sm:h-20 rounded-xl bg-white/5 border border-white/5 p-2 sm:p-3 flex flex-col justify-between">
+                    <span className="text-[9px] sm:text-xs text-slate-500 truncate">Study Score</span>
+                    <span className="text-xs sm:text-xl font-bold text-emerald-400 truncate">92/100 🎯</span>
                   </div>
                 </div>
                 <div className="h-32 rounded-xl bg-white/5 border border-white/5 p-4 flex flex-col justify-between">

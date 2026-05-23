@@ -7,6 +7,7 @@ import {
   LayoutDashboard, 
   BookOpen, 
   Calendar, 
+  CalendarDays,
   FileText, 
   Timer, 
   BarChart3, 
@@ -27,6 +28,7 @@ export default function Sidebar({ isOpen, onClose }) {
     { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
     { name: "Flashcards", path: "/flashcards", icon: BookOpen },
     { name: "Timetable", path: "/timetable", icon: Calendar },
+    { name: "Timeline", path: "/timeline", icon: CalendarDays },
     { name: "Notes", path: "/notes", icon: FileText },
     { name: "Focus Timer", path: "/pomodoro", icon: Timer },
     { name: "Analytics", path: "/analytics", icon: BarChart3 },
@@ -47,7 +49,7 @@ export default function Sidebar({ isOpen, onClose }) {
 
       {/* Sidebar Panel */}
       <aside 
-        className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col w-64 border-r border-sky-100/70 dark:border-sky-900/20 bg-white/72 dark:bg-slate-950/72 backdrop-blur-xl transition-transform duration-300 lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col w-64 border-r border-sky-100/70 dark:border-sky-900/20 bg-white/95 dark:bg-slate-950/95 shadow-2xl transition-transform duration-300 lg:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >

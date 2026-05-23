@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import { useLocation } from "react-router-dom";
 import { useFirestore } from "../hooks/useFirestore";
 import { useToast } from "../context/ToastContext";
 import { 
@@ -7,7 +8,8 @@ import {
 } from "lucide-react";
 
 export default function Focus() {
-  const { flashcards, logStudySession, studySessions } = useFirestore();
+  const location = useLocation();
+  const { flashcards, logStudySession, studySessions, timetables } = useFirestore();
   const { showToast } = useToast();
 
   const [mode, setMode] = useState("focus"); // focus, short_break, long_break
@@ -18,24 +20,53 @@ export default function Focus() {
 
   const timerRef = useRef(null);
 
+  const [focusDuration, setFocusDuration] = useState(25 * 60);
+
   // Mode durations in seconds
-  const DURATIONS = {
-    focus: 25 * 60,
+  const DURATIONS = useMemo(() => ({
+    focus: focusDuration,
     short_break: 5 * 60,
     long_break: 15 * 60
-  };
+  }), [focusDuration]);
 
-  // Get unique subjects list from flashcards to populate focus selector
+  // Sync unique subjects from both flashcards and timetables to populate focus selector
   const subjectsList = useMemo(() => {
-    const subs = flashcards.map(c => c.subject || "General");
-    return ["General", ...new Set(subs)];
-  }, [flashcards]);
+    const subs = new Set(["General"]);
+    flashcards.forEach(c => { if (c.subject) subs.add(c.subject); });
+    if (timetables && timetables.length > 0) {
+      const activeTt = timetables[0];
+      if (activeTt.subjects) {
+        activeTt.subjects.forEach(s => { if (s.name) subs.add(s.name); });
+      }
+      activeTt.schedule?.forEach(day => {
+        day.slots?.forEach(slot => {
+          if (slot.subject && slot.subject !== "Break") {
+            subs.add(slot.subject);
+          }
+        });
+      });
+    }
+    return Array.from(subs);
+  }, [flashcards, timetables]);
 
   // Set default duration on mode change
   useEffect(() => {
     setIsRunning(false);
     setTimeLeft(DURATIONS[mode]);
-  }, [mode]);
+  }, [mode, DURATIONS]);
+
+  // Read navigation state parameters on load
+  useEffect(() => {
+    if (location.state?.duration) {
+      const durationSeconds = Number(location.state.duration) * 60;
+      setFocusDuration(durationSeconds);
+      setTimeLeft(durationSeconds);
+      setMode("focus");
+    }
+    if (location.state?.subject) {
+      setSelectedSubject(location.state.subject);
+    }
+  }, [location.state]);
 
   // Timer countdown engine
   useEffect(() => {

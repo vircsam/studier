@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useFirestore } from "../hooks/useFirestore";
 import { 
@@ -23,6 +23,7 @@ import {
 } from "recharts";
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { 
     flashcards, 
@@ -243,11 +244,12 @@ export default function Dashboard() {
               todaySchedule.map((slot, i) => (
                 <div 
                   key={i} 
-                  className="p-3.5 rounded-xl bg-slate-100/50 dark:bg-slate-900/40 border border-slate-200/50 dark:border-slate-800/30 flex items-center justify-between gap-3 text-sm"
+                  onClick={() => navigate("/pomodoro", { state: { duration: slot.duration || 45, subject: slot.subject } })}
+                  className="p-3.5 rounded-xl bg-slate-100/50 dark:bg-slate-900/40 border border-slate-200/50 dark:border-slate-800/30 flex items-center justify-between gap-3 text-sm cursor-pointer hover:border-brand-500/40 transition-all hover:bg-slate-200/20 dark:hover:bg-slate-900/60"
                 >
-                  <div className="space-y-0.5">
-                    <span className="font-semibold block text-slate-800 dark:text-slate-200">{slot.subject}</span>
-                    <span className="text-xs text-slate-400">{slot.type}</span>
+                  <div className="space-y-0.5 min-w-0">
+                    <span className="font-semibold block text-slate-800 dark:text-slate-200 truncate">{slot.subject}</span>
+                    <span className="text-xs text-slate-400 truncate block">{slot.type}</span>
                   </div>
                   <div className="text-right space-y-1.5 flex-shrink-0">
                     <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400">
