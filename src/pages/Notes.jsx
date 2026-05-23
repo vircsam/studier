@@ -3,8 +3,9 @@ import { useFirestore } from "../hooks/useFirestore";
 import { useToast } from "../context/ToastContext";
 import { 
   FileText, Search, Plus, Trash2, Tag, BookOpen, 
-  Sparkles, Save, Eye, Edit3, ArrowLeft 
+  Sparkles, Save, Eye, Edit3, ArrowLeft, Paperclip 
 } from "lucide-react";
+import { uploadFileOrBase64 } from "../services/db";
 
 export default function Notes() {
   const { notes, addNote, updateNote, deleteNote } = useFirestore();
@@ -23,8 +24,11 @@ export default function Notes() {
 
   const [editMode, setEditMode] = useState("edit"); // edit, preview, split
   const [saving, setSaving] = useState(false);
-  const [aiLoading, setAiLoading] = useState(false);
   const [mobileActive, setMobileActive] = useState(false); // list vs editor on mobile
+  const [uploadingAttachment, setUploadingAttachment] = useState(false);
+
+  // AI Mock State (Commented out)
+  // const [aiLoading, setAiLoading] = useState(false);
 
   // 1. Get current active note object
   const activeNote = useMemo(() => {
@@ -156,7 +160,8 @@ export default function Notes() {
     setEditorTags(editorTags.filter(t => t !== tagToRemove));
   };
 
-  // 9. AI Summarize Mock fetch call
+  // 9. AI Summarize Mock fetch call (Commented out)
+  /*
   const handleAiSummarize = async () => {
     if (!editorContent || editorContent.trim().length < 10) {
       showToast("Write a longer note before summarizing", "warning");
@@ -188,6 +193,51 @@ export default function Notes() {
       showToast("AI Summarization failed. Check server status.", "error");
     } finally {
       setAiLoading(false);
+    }
+  };
+  */
+
+  // 9b. Handle attachment uploads
+  const handleAttachmentUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !activeNoteId || !activeNote) return;
+
+    setUploadingAttachment(true);
+    try {
+      const fileId = Math.random().toString(36).substring(2, 9);
+      const path = `users/notes/${activeNoteId}/${fileId}_${file.name}`;
+      const url = await uploadFileOrBase64(path, file, isMockMode);
+
+      const newAttachment = {
+        name: file.name,
+        url: url,
+        type: file.type
+      };
+
+      const updatedAttachments = [...(activeNote.attachments || []), newAttachment];
+      await updateNote(activeNoteId, {
+        attachments: updatedAttachments
+      });
+      showToast("Attachment uploaded successfully!", "success");
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to upload attachment", "error");
+    } finally {
+      setUploadingAttachment(false);
+    }
+  };
+
+  const handleRemoveAttachment = async (indexToRemove) => {
+    if (!activeNoteId || !activeNote) return;
+    try {
+      const updatedAttachments = (activeNote.attachments || []).filter((_, idx) => idx !== indexToRemove);
+      await updateNote(activeNoteId, {
+        attachments: updatedAttachments
+      });
+      showToast("Attachment removed", "info");
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to remove attachment", "error");
     }
   };
 
@@ -350,7 +400,7 @@ export default function Notes() {
 
               {/* Toolbar Actions */}
               <div className="flex items-center gap-2 self-end sm:self-auto">
-                <button
+                {/* <button
                   onClick={handleAiSummarize}
                   disabled={aiLoading}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-brand-600 dark:text-brand-400 bg-brand-500/10 border border-brand-500/20 hover:bg-brand-500/20 transition-all disabled:opacity-50"
@@ -361,7 +411,7 @@ export default function Notes() {
                     <Sparkles className="w-3.5 h-3.5" />
                   )}
                   <span>AI Summarize</span>
-                </button>
+                </button> */}
 
                 {/* Edit/Preview Toggle */}
                 <div className="flex border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden text-slate-400">
@@ -431,20 +481,96 @@ export default function Notes() {
               </div>
             </div>
 
+            {/* Note Attachments Section */}
+            <div className="flex flex-wrap items-center gap-3 border-t border-slate-200/40 dark:border-slate-800/40 pt-3 text-xs">
+              <div className="flex items-center gap-1.5">
+                <Paperclip className="w-4 h-4 text-slate-400" />
+                <span className="font-semibold text-slate-500">Attachments:</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {activeNote.attachments?.map((att, idx) => (
+                  <div 
+                    key={idx} 
+                    className="bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/40 px-2.5 py-1 rounded-xl flex items-center gap-2 text-[10px] font-semibold"
+                  >
+                    {att.type?.startsWith("image/") ? (
+                      <img src={att.url} className="w-4 h-4 object-cover rounded" alt="" />
+                    ) : null}
+                    <a 
+                      href={att.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-brand-600 dark:text-brand-400 hover:underline max-w-[120px] truncate"
+                      title={att.name}
+                    >
+                      {att.name}
+                    </a>
+                    <button 
+                      type="button" 
+                      onClick={() => handleRemoveAttachment(idx)} 
+                      className="text-rose-500 font-bold hover:scale-110 ml-0.5"
+                      title="Remove Attachment"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+                <label className="flex items-center gap-1 px-2.5 py-1 border border-dashed border-slate-350 dark:border-slate-850 hover:border-brand-500 hover:text-brand-500 rounded-xl text-[10px] font-bold cursor-pointer transition-colors">
+                  {uploadingAttachment ? (
+                    <span className="animate-pulse">Uploading...</span>
+                  ) : (
+                    <>
+                      <Plus className="w-3 h-3" /> Add File
+                    </>
+                  )}
+                  <input 
+                    type="file" 
+                    onChange={handleAttachmentUpload} 
+                    disabled={uploadingAttachment}
+                    className="hidden" 
+                  />
+                </label>
+              </div>
+            </div>
+
             {/* Editor / Preview Content Splitting */}
-            <div className="flex-1 min-h-0">
+            <div className="flex-1 min-h-0 text-left">
               {editMode === "edit" ? (
                 <textarea
                   value={editorContent}
                   onChange={(e) => setEditorContent(e.target.value)}
                   placeholder="Markdown study guide content goes here..."
-                  className="w-full h-full bg-transparent border-none outline-none font-sans leading-relaxed resize-none text-slate-700 dark:text-slate-300 placeholder-slate-400 text-sm overflow-y-auto"
+                  className="w-full h-full bg-transparent border-none outline-none font-sans leading-relaxed resize-none text-slate-700 dark:text-slate-300 placeholder-slate-400 text-sm overflow-y-auto animate-fadeIn"
                 />
               ) : (
-                <div 
-                  className="w-full h-full overflow-y-auto pr-1 text-left prose prose-slate dark:prose-invert max-w-none"
-                  dangerouslySetInnerHTML={{ __html: parseMarkdown(editorContent) }}
-                />
+                <div className="w-full h-full overflow-y-auto pr-1">
+                  <div 
+                    className="prose prose-slate dark:prose-invert max-w-none text-left"
+                    dangerouslySetInnerHTML={{ __html: parseMarkdown(editorContent) }}
+                  />
+                  {activeNote.attachments?.some(att => att.type?.startsWith("image/")) && (
+                    <div className="mt-8 pt-4 border-t border-slate-200/50 dark:border-slate-800/40">
+                      <h5 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Attached Images</h5>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                        {activeNote.attachments.filter(att => att.type?.startsWith("image/")).map((att, idx) => (
+                          <a 
+                            key={idx}
+                            href={att.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group aspect-[4/3] rounded-xl overflow-hidden border border-slate-200/50 dark:border-slate-800/30 hover:border-brand-500/30 transition-all bg-slate-100/30 dark:bg-slate-900/10 flex items-center justify-center p-1"
+                          >
+                            <img 
+                              src={att.url} 
+                              alt={att.name} 
+                              className="max-w-full max-h-full object-contain rounded-lg group-hover:scale-[1.03] transition-transform" 
+                            />
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
             

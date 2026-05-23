@@ -1,4 +1,4 @@
-import { db } from "../firebase/config";
+import { db, storage } from "../firebase/config";
 import { 
   doc, 
   setDoc, 
@@ -9,6 +9,7 @@ import {
   addDoc,
   serverTimestamp 
 } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 /**
  * User Profile Services
@@ -155,4 +156,30 @@ export async function dbSaveTimetable(timetable) {
   };
   await setDoc(doc(db, "timetables", docId), timetableData);
   return timetableData;
+}
+
+/**
+ * Storage / File Upload Services
+ */
+export function readFileAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+  });
+}
+
+export async function uploadFileOrBase64(path, file, isMock) {
+  if (isMock) {
+    return await readFileAsBase64(file);
+  }
+  try {
+    const storageRef = ref(storage, path);
+    const snapshot = await uploadBytes(storageRef, file);
+    return await getDownloadURL(snapshot.ref);
+  } catch (err) {
+    console.warn("Firebase Storage upload failed, falling back to Base64:", err);
+    return await readFileAsBase64(file);
+  }
 }
