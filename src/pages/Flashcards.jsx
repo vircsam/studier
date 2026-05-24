@@ -224,9 +224,9 @@ export default function Flashcards() {
                 </div>
                 <div className="text-center space-y-3 my-auto w-full overflow-y-auto max-h-56 pr-1">
                   {currentCard?.type === "Code" || currentCard?.type === "Pattern" ? (
-                    <pre className="text-left font-mono bg-slate-950 text-emerald-450 p-6 rounded-2xl text-xs leading-relaxed whitespace-pre-wrap overflow-x-auto border border-slate-900 shadow-inner">
-                      <code>{currentCard?.question}</code>
-                    </pre>
+                    <pre className="text-left font-mono bg-slate-950 text-emerald-300 p-8 rounded-2xl text-base md:text-lg leading-relaxed whitespace-pre-wrap overflow-x-auto border border-emerald-500/20 shadow-lg">
+                    <code>{currentCard?.question}</code>
+                  </pre>
                   ) : (
                     <div className="font-bold text-lg sm:text-xl text-slate-800 dark:text-slate-200">
                       {currentCard?.question}
@@ -245,9 +245,9 @@ export default function Flashcards() {
                 </span>
                 <div className="text-center space-y-3 my-auto overflow-y-auto max-h-64 w-full pr-1">
                   {currentCard?.type === "Code" || currentCard?.type === "Pattern" ? (
-                    <pre className="text-left font-mono bg-slate-950 text-slate-200 p-6 rounded-2xl text-xs leading-relaxed whitespace-pre-wrap overflow-x-auto border border-slate-900 shadow-inner">
-                      <code>{currentCard?.answer}</code>
-                    </pre>
+                    <pre className="text-left font-mono bg-slate-950 text-slate-100 p-8 rounded-2xl text-base md:text-lg leading-relaxed whitespace-pre-wrap overflow-x-auto border border-slate-800 shadow-lg">
+                    <code>{currentCard?.answer}</code>
+                  </pre>
                   ) : (
                     <div className="text-slate-750 dark:text-slate-300 leading-relaxed font-medium">
                       {currentCard?.answer}
