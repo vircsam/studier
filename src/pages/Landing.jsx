@@ -35,12 +35,15 @@ export default function Landing() {
 
   return (
     <div className="relative min-h-screen overflow-x-hidden font-sans text-slate-800 selection:bg-brand-500 selection:text-white bg-white flex flex-col">
-      <div className="flex-1">
-        {/* Decorative Orbs - Light Theme */}
-        <div className="absolute top-[-5%] left-[-10%] w-[400px] h-[400px] rounded-full bg-brand-200/40 blur-[150px] pointer-events-none" />
-        <div className="absolute bottom-[-5%] right-[-10%] w-[400px] h-[400px] rounded-full bg-green-200/50 blur-[150px] pointer-events-none" />
-        <div className="absolute top-[20%] right-[10%] w-[300px] h-[300px] rounded-full bg-sky-200/30 blur-[120px] pointer-events-none" />
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-200/60 to-transparent pointer-events-none" />
+      {/* Decorative Orbs - Light Theme */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[-5%] left-[-10%] w-[400px] h-[400px] rounded-full bg-brand-200/40 blur-[150px]" />
+        <div className="absolute bottom-[-5%] right-[-10%] w-[400px] h-[400px] rounded-full bg-green-200/50 blur-[150px]" />
+        <div className="absolute top-[20%] right-[10%] w-[300px] h-[300px] rounded-full bg-sky-200/30 blur-[120px]" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-200/60 to-transparent" />
+      </div>
+
+      <div className="flex-1 relative z-10">
 
         {/* Floating Navbar */}
         <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
@@ -323,7 +326,7 @@ export default function Landing() {
       </div>
 
       {/* Footer */}
-      <div className="mt-auto">
+      <div className="mt-auto relative z-10">
         <Footer />
       </div>
     </div>

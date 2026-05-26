@@ -54,12 +54,12 @@ export default function AppLayout({ children, title }) {
   }
 
   return (
-    <div className="min-h-screen text-slate-900 dark:text-slate-100 bg-[radial-gradient(circle_at_top_left,_rgba(125,211,252,0.16),_transparent_24%),linear-gradient(180deg,_#f8fbff_0%,_#edf5ff_100%)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.12),_transparent_20%),linear-gradient(180deg,_#081120_0%,_#0d1b2f_100%)]">
+    <div className="h-screen overflow-hidden text-slate-900 dark:text-slate-100 bg-[radial-gradient(circle_at_top_left,_rgba(125,211,252,0.16),_transparent_24%),linear-gradient(180deg,_#f8fbff_0%,_#edf5ff_100%)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.12),_transparent_20%),linear-gradient(180deg,_#081120_0%,_#0d1b2f_100%)]">
       {/* Sidebar Nav */}
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       {/* Main Panel Content */}
-      <div className="lg:pl-64 flex flex-col min-h-screen">
+      <div className="lg:pl-64 flex flex-col h-screen">
         <Navbar onOpenSidebar={() => setIsSidebarOpen(true)} pageTitle={title} />
         <main className="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto overflow-y-auto">
           {children}
