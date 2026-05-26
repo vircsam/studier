@@ -45,6 +45,13 @@
 }
 
 /* Native scrollbars will be used instead of custom webkit overrides */
+* {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
 
 /* Glassmorphism utilities */
 .glass-panel {
