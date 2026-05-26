@@ -50,6 +50,10 @@ export default function Login() {
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
   const [lockedUntil, setLockedUntil] = useState(() => getRateLimitState().lockedUntil || null);
+  // New OTP related state
+  const [awaitingOtp, setAwaitingOtp] = useState(false);
+  const [generatedOtp, setGeneratedOtp] = useState("");
+  const [otp, setOtp] = useState("");
 
   useEffect(() => {
     setIsSignUp(searchParams.get("signup") === "true");
@@ -72,6 +76,26 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // OTP verification handling
+    if (isSignUp && awaitingOtp) {
+      // Verify entered OTP against stored value
+      const storedOtp = localStorage.getItem(`signup_otp_${email}`);
+      if (otp === storedOtp) {
+        showToast("OTP verified! You can now sign in.", "success");
+        // Clear OTP and move to sign-in flow
+        localStorage.removeItem(`signup_otp_${email}`);
+        setAwaitingOtp(false);
+        setIsSignUp(false);
+        setGeneratedOtp("");
+        setOtp("");
+      } else {
+        showToast("Invalid OTP. Please try again.", "error");
+      }
+      setLoading(false);
+      return; // Stop further processing
+    }
+
     if (!email || !password || (isSignUp && (!displayName || !confirmPassword))) {
       showToast("Please fill in all fields", "warning");
       return;
@@ -96,9 +120,14 @@ export default function Login() {
     try {
       if (isSignUp) {
         await signUpEmail(email, password, displayName);
-        setConfirmPassword("");
-        showToast("Verification email sent. Please verify your email before signing in.", "success");
-        setIsSignUp(false);
+        // Generate a 6-digit OTP
+        const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+        setGeneratedOtp(otpCode);
+        // For demo purposes, store OTP in localStorage (real implementation would email it)
+        localStorage.setItem(`signup_otp_${email}`, otpCode);
+        setAwaitingOtp(true);
+        showToast(`OTP sent to ${email}. Please enter it below.`, "success");
+        // Do not navigate yet; await OTP verification
       } else {
         await signInEmail(email, password);
         saveRateLimitState({ attempts: [] });
@@ -264,16 +293,33 @@ export default function Login() {
               </p>
             )}
 
+            {isSignUp && awaitingOtp && (
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">OTP Code</label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" />
+                <input
+                  type="text"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  placeholder="Enter OTP"
+                  disabled={loading}
+                  className="w-full bg-slate-50/50 border border-slate-200 rounded-2xl pl-12 pr-4 py-3.5 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20 text-sm font-medium text-slate-800 transition-all placeholder:text-slate-400"
+                />
+              </div>
+            </div>
+          )}
+
             <button
               type="submit"
-              disabled={loading || (!isSignUp && !!lockedUntil && Date.now() < lockedUntil)}
+              disabled={loading || (!isSignUp && !!lockedUntil && Date.now() < lockedUntil) || (isSignUp && awaitingOtp && !otp)}
               className="w-full flex items-center justify-center gap-2 mt-6 px-6 py-4 text-base font-bold text-white bg-gradient-to-r from-brand-500 to-green-500 hover:from-brand-600 hover:to-green-600 rounded-2xl shadow-xl shadow-brand-500/25 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none transition-all"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
                 <>
-                  <span>{isSignUp ? "Create Account" : "Sign In"}</span>
+                  <span>{isSignUp ? (awaitingOtp ? "Verify OTP" : "Create Account") : "Sign In"}</span>
                   <ArrowRight className="w-5 h-5" />
                 </>
               )}
