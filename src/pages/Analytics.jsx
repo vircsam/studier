@@ -14,7 +14,6 @@ export default function Analytics() {
   const { studySessions, flashcards, streak, productivityScore } = useFirestore();
   const { showToast } = useToast();
 
-  const { studySessions, flashcards, streak, productivityScore } = useFirestore();
 
   const metrics = useMemo(() => {
     const totalFocusMinutes = studySessions

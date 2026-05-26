@@ -196,41 +196,48 @@ export default function Timeline() {
       zIndex: isBreak ? 1 : 2
     };
 
+    if (isBreak) {
+      return (
+        <div
+          key={idx}
+          style={cardStyle}
+          className="flex items-center justify-center bg-slate-100/50 dark:bg-slate-800/30 border-y border-dashed border-slate-300 dark:border-slate-600 text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-wider overflow-hidden"
+          title={`Break (${slot.time})`}
+        >
+          {pos.height >= 14 ? "Break" : ""}
+        </div>
+      );
+    }
+
     return (
       <div
         key={idx}
         style={cardStyle}
-        onClick={() => {
-          if (!isBreak) setSelectedEvent({ ...slot, dateStr });
-        }}
+        onClick={() => setSelectedEvent({ ...slot, dateStr })}
         className={`rounded-xl border p-1.5 text-left flex flex-col justify-between overflow-hidden transition-all text-[11px] ${
-          isBreak
-            ? "bg-slate-50/70 dark:bg-slate-900/30 border-dashed border-slate-200 dark:border-slate-800 opacity-50"
-            : isCompleted
-              ? "bg-emerald-500/10 border-emerald-500/25 opacity-80 cursor-pointer hover:bg-emerald-500/15"
-              : "bg-brand-500/10 border-brand-500/20 hover:border-brand-500/40 cursor-pointer hover:bg-brand-500/15 shadow-sm"
+          isCompleted
+            ? "bg-emerald-500/10 border-emerald-500/25 opacity-80 cursor-pointer hover:bg-emerald-500/15"
+            : "bg-brand-500/10 border-brand-500/20 hover:border-brand-500/40 cursor-pointer hover:bg-brand-500/15 shadow-sm"
         }`}
         title={`${slot.subject} (${slot.time})`}
       >
         <div className="flex items-start justify-between gap-1 w-full min-w-0">
           <div className="min-w-0 flex-1">
             <span className={`font-bold block truncate leading-tight ${
-              isBreak ? "text-slate-500" : isCompleted ? "text-slate-400 dark:text-slate-500 line-through decoration-slate-400/50" : "text-slate-800 dark:text-slate-200"
+              isCompleted ? "text-slate-400 dark:text-slate-500 line-through decoration-slate-400/50" : "text-slate-800 dark:text-slate-200"
             }`}>
               {slot.subject}
             </span>
             {pos.height > 40 && <span className="text-[9px] text-slate-450 truncate block leading-none">{slot.type}</span>}
           </div>
-          {!isBreak && (
-            <button
-              onClick={(e) => handleEventComplete(e, dateStr, slot)}
-              className={`p-0.5 rounded transition-colors cursor-pointer flex-shrink-0 ${
-                isCompleted ? "text-emerald-500 hover:text-slate-400" : "text-slate-300 hover:text-emerald-500 dark:text-slate-700"
-              }`}
-            >
-              <CheckCircle2 className={`w-3.5 h-3.5 ${isCompleted ? "fill-emerald-500/10" : ""}`} />
-            </button>
-          )}
+          <button
+            onClick={(e) => handleEventComplete(e, dateStr, slot)}
+            className={`p-0.5 rounded transition-colors cursor-pointer flex-shrink-0 ${
+              isCompleted ? "text-emerald-500 hover:text-slate-400" : "text-slate-300 hover:text-emerald-500 dark:text-slate-700"
+            }`}
+          >
+            <CheckCircle2 className={`w-3.5 h-3.5 ${isCompleted ? "fill-emerald-500/10" : ""}`} />
+          </button>
         </div>
         {pos.height > 50 && (
           <div className="flex items-center justify-between text-[9px] text-slate-400 mt-0.5 font-mono leading-none">
