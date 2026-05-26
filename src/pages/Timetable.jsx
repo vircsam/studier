@@ -797,10 +797,10 @@ export default function Timetable() {
         </div>
 
         {/* Right Side: Generated Routine Output view */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-6 h-full">
           {activeTimetable ? (
-            <div className="glass-panel p-6 rounded-3xl flex flex-col justify-between h-full min-h-[450px]">
-              <div>
+            <div className="glass-panel p-6 rounded-3xl flex flex-col h-[750px]">
+              <div className="flex-1 flex flex-col min-h-0">
                 {/* Header info */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/50 dark:border-slate-800/40">
                   <div>
@@ -873,7 +873,7 @@ export default function Timetable() {
                 </div>
 
                 {/* Slots view list */}
-                <div className="space-y-3 mt-2 pr-1 max-h-[350px] overflow-y-auto">
+                <div className="space-y-3 mt-4 pr-2 flex-1 overflow-y-auto">
                   {displaySlots.map((slot, idx) => {
                       const isBreak = slot.subject === "Break";
                       return (
@@ -884,7 +884,8 @@ export default function Timetable() {
                               navigate("/pomodoro", { state: { duration: slot.duration, subject: slot.subject } });
                             }
                           }}
-                          className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm transition-all ${
+                          style={{ minHeight: isBreak ? '64px' : Math.max(100, (slot.duration || 45) * 2) + 'px' }}
+                          className={`p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm transition-all shadow-sm ${
                             isBreak 
                               ? "bg-slate-50/50 dark:bg-slate-950/20 border-dashed border-slate-200 dark:border-slate-850 opacity-60" 
                               : `bg-slate-100/50 dark:bg-slate-900/40 border-slate-200/50 dark:border-slate-800/30 cursor-pointer hover:border-brand-500/40 hover:bg-slate-200/20 dark:hover:bg-slate-900/60 ${
@@ -1000,7 +1001,7 @@ export default function Timetable() {
               </div>
             </div>
           ) : (
-            <div className="glass-panel p-16 rounded-3xl text-center space-y-4 flex flex-col items-center justify-center h-full min-h-[450px]">
+            <div className="glass-panel p-16 rounded-3xl text-center space-y-4 flex flex-col items-center justify-center h-[750px]">
               <div className="w-16 h-16 rounded-2xl bg-brand-500/10 text-brand-500 flex items-center justify-center">
                 <Calendar className="w-8 h-8" />
               </div>

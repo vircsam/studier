@@ -19,6 +19,7 @@ export default function Focus() {
   const [soundEnabled, setSoundEnabled] = useState(true);
 
   const timerRef = useRef(null);
+  const targetEndTimeRef = useRef(null);
 
   const [focusDuration, setFocusDuration] = useState(25 * 60);
 
@@ -71,18 +72,24 @@ export default function Focus() {
   // Timer countdown engine
   useEffect(() => {
     if (isRunning) {
+      if (!targetEndTimeRef.current) {
+        targetEndTimeRef.current = Date.now() + timeLeft * 1000;
+      }
       timerRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            clearInterval(timerRef.current);
-            handleTimerComplete();
-            return 0;
-          }
-          return prev - 1;
-        });
+        const remaining = Math.round((targetEndTimeRef.current - Date.now()) / 1000);
+        if (remaining <= 0) {
+          clearInterval(timerRef.current);
+          setTimeLeft(0);
+          setIsRunning(false);
+          targetEndTimeRef.current = null;
+          handleTimerComplete();
+        } else {
+          setTimeLeft(remaining);
+        }
       }, 1000);
     } else {
       if (timerRef.current) clearInterval(timerRef.current);
+      targetEndTimeRef.current = null;
     }
 
     return () => {
@@ -148,9 +155,9 @@ export default function Focus() {
     }
   };
 
-  // Reset clock
   const handleReset = () => {
     setIsRunning(false);
+    targetEndTimeRef.current = null;
     setTimeLeft(DURATIONS[mode]);
     showToast("Timer reset", "info");
   };
@@ -171,7 +178,7 @@ export default function Focus() {
   // Recents sessions logged today
   const todaysSessions = useMemo(() => {
     const todayStr = new Date().toISOString().split("T")[0];
-    return studySessions.filter(s => s.date === todayStr && s.type === "focus");
+    return studySessions.filter(s => s.date === todayStr && (!s.type || s.type === "focus"));
   }, [studySessions]);
 
   return (

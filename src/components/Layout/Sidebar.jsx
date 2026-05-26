@@ -15,12 +15,13 @@ import {
   Sun, 
   Moon, 
   X,
-  Award
+  Award,
+  Sparkles
 } from "lucide-react";
 
 export default function Sidebar({ isOpen, onClose }) {
   const { user, logout } = useAuth();
-  const { streak, isMockMode } = useFirestore();
+  const { streak } = useFirestore();
   const { theme, toggleTheme } = useStore();
   const location = useLocation();
 
@@ -34,42 +35,42 @@ export default function Sidebar({ isOpen, onClose }) {
     { name: "Analytics", path: "/analytics", icon: BarChart3 },
   ];
 
-  const activeClass = "bg-gradient-to-r from-sky-500/12 to-brand-500/10 text-brand-700 dark:text-sky-200 font-medium border-l-4 border-sky-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]";
-  const inactiveClass = "text-slate-600 dark:text-slate-400 hover:bg-sky-50/70 dark:hover:bg-slate-900/60 hover:text-slate-900 dark:hover:text-white transition-all";
+  const activeClass = "bg-gradient-to-r from-brand-50 to-green-50/50 text-brand-600 dark:bg-slate-800 dark:text-brand-400 font-bold shadow-sm border border-brand-100/50 dark:border-slate-700/50";
+  const inactiveClass = "text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-all font-medium border border-transparent";
 
   return (
     <>
       {/* Mobile Overlay */}
       {isOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-slate-900/20 backdrop-blur-sm lg:hidden"
           onClick={onClose}
         />
       )}
 
       {/* Sidebar Panel */}
       <aside 
-        className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col w-64 border-r border-sky-100/70 dark:border-sky-900/20 bg-white/95 dark:bg-slate-950/95 shadow-2xl transition-transform duration-300 lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col w-64 border-r border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[20px_0_40px_rgba(0,0,0,0.02)] transition-transform duration-300 lg:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* Brand Header */}
-        <div className="flex items-center justify-between h-16 px-6 border-b border-slate-200/50 dark:border-slate-800/40">
-          <Link to="/" className="flex items-center gap-2" onClick={onClose}>
-          <div className="flex items-center justify-center w-15 h-15 rounded-full bg-black/80 border border-sky-100/80 dark:border-sky-900/30 shadow-[0_10px_24px_rgba(56,189,248,0.08)] overflow-hidden">
-            <img
-              src="/logo.png"
-              alt="Studier logo"
-              className="w-12 h-12 object-cover rounded-full"
-            />
-          </div>
-            {/* <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-500 via-brand-500 to-indigo-500 dark:from-sky-300 dark:via-brand-300 dark:to-indigo-300">
+        <div className="flex items-center justify-between h-20 px-6 border-b border-slate-100 dark:border-slate-800">
+          <Link to="/" className="flex items-center gap-3" onClick={onClose}>
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-brand-100 shadow-sm overflow-hidden">
+              <img
+                src="/logo.png"
+                alt="Studier logo"
+                className="w-8 h-8 object-cover rounded-full"
+              />
+            </div>
+            <span className="amita-bold text-2xl tracking-tight text-brand-600 dark:text-brand-400">
               Studier
-            </span> */}
+            </span>
           </Link>
           <button 
             onClick={onClose}
-            className="p-1 rounded-lg lg:hidden text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-900"
+            className="p-2 rounded-full lg:hidden text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -77,17 +78,21 @@ export default function Sidebar({ isOpen, onClose }) {
 
         {/* Streak indicator */}
         {user && (
-          <div className="mx-4 my-4 p-3 rounded-xl bg-gradient-to-r from-amber-500/12 to-sky-500/10 border border-amber-400/20 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Award className="w-5 h-5 text-amber-500 animate-bounce" />
-              <span className="text-sm font-semibold text-amber-600 dark:text-amber-400">Streak: {streak} days</span>
+          <div className="mx-4 mt-6 p-4 rounded-[1.25rem] bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border border-amber-100 dark:border-amber-900/30 flex items-center justify-between shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-white dark:bg-amber-900/50 flex items-center justify-center shadow-sm">
+                <Award className="w-4 h-4 text-amber-500 animate-bounce" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600/70 dark:text-amber-500/70">Streak</span>
+                <span className="text-sm font-bold text-amber-700 dark:text-amber-400">{streak} Days</span>
+              </div>
             </div>
-            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">🔥 Active</span>
           </div>
         )}
 
         {/* Navigation Items */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
           {menuItems.map((item) => {
             const isActive = location.pathname === item.path;
             const Icon = item.icon;
@@ -96,23 +101,26 @@ export default function Sidebar({ isOpen, onClose }) {
                 key={item.name}
                 to={item.path}
                 onClick={onClose}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm ${
+                className={`flex items-center gap-3 px-4 py-3.5 rounded-[1rem] text-sm ${
                   isActive ? activeClass : inactiveClass
                 }`}
               >
-                <Icon className="w-5 h-5" />
+                <Icon className={`w-5 h-5 ${isActive ? 'text-brand-500' : 'text-slate-400'}`} />
                 <span>{item.name}</span>
+                {isActive && (
+                  <Sparkles className="w-3 h-3 ml-auto text-brand-400" />
+                )}
               </Link>
             );
           })}
         </nav>
 
         {/* User Info / Footer */}
-        <div className="p-4 border-t border-slate-200/50 dark:border-slate-800/40 space-y-3">
+        <div className="p-4 border-t border-slate-100 dark:border-slate-800 space-y-3 bg-slate-50/50 dark:bg-slate-900/50">
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
-            className="flex items-center justify-between w-full px-4 py-2.5 rounded-xl text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 transition-all"
+            className="flex items-center justify-between w-full px-4 py-3 rounded-2xl text-sm font-bold text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700 hover:border-brand-200 hover:text-brand-600 dark:hover:text-brand-400 transition-all shadow-sm"
           >
             <span className="flex items-center gap-3">
               {theme === "dark" ? (
@@ -122,7 +130,7 @@ export default function Sidebar({ isOpen, onClose }) {
                 </>
               ) : (
                 <>
-                  <Moon className="w-5 h-5 text-indigo-500" />
+                  <Moon className="w-5 h-5 text-brand-500" />
                   <span>Dark Mode</span>
                 </>
               )}
@@ -131,31 +139,31 @@ export default function Sidebar({ isOpen, onClose }) {
 
           {user ? (
             <div className="space-y-3">
-              <div className="flex items-center gap-3 px-2 py-1">
+              <div className="flex items-center gap-3 px-3 py-2 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-sm">
                 {user.photoURL ? (
                   <img 
                     src={user.photoURL} 
                     alt={user.displayName || "User"} 
-                    className="w-9 h-9 rounded-full object-cover border border-slate-200/50 dark:border-slate-800/40"
+                    className="w-10 h-10 rounded-xl object-cover border border-slate-100 dark:border-slate-700"
                     referrerPolicy="no-referrer"
                   />
                 ) : (
-                  <div className="flex items-center justify-center w-9 h-9 rounded-full bg-brand-500 text-white font-bold text-sm uppercase">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-brand-400 to-green-400 text-white font-bold text-sm uppercase shadow-sm">
                     {user.displayName ? user.displayName.charAt(0) : user.email.charAt(0)}
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate text-slate-800 dark:text-slate-200">
+                  <p className="text-sm font-bold truncate text-slate-800 dark:text-slate-200">
                     {user.displayName || "Student"}
                   </p>
-                  <p className="text-xs truncate text-slate-500 dark:text-slate-400">
+                  <p className="text-[11px] truncate text-slate-500 font-medium">
                     {user.email}
                   </p>
                 </div>
               </div>
               <button
                 onClick={logout}
-                className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-semibold text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 rounded-xl transition-all"
+                className="flex items-center justify-center gap-2 w-full px-4 py-3 text-sm font-bold text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 dark:hover:bg-rose-900/40 rounded-2xl transition-all"
               >
                 <LogOut className="w-4 h-4" />
                 <span>Sign Out</span>
@@ -165,7 +173,7 @@ export default function Sidebar({ isOpen, onClose }) {
             <div className="space-y-2">
               <Link
                 to="/login"
-                className="flex items-center justify-center w-full px-4 py-2.5 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-lg shadow-brand-500/25 transition-all"
+                className="flex items-center justify-center w-full px-4 py-3 text-sm font-bold text-white bg-brand-500 hover:bg-brand-600 rounded-2xl shadow-md shadow-brand-500/20 transition-all"
               >
                 Log In
               </Link>

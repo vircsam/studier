@@ -5,7 +5,7 @@ import { useToast } from "../context/ToastContext";
 import { useStore } from "../store/useStore";
 import { 
   CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, 
-  HelpCircle, Calendar, Plus, Grid, LayoutList, X, Timer
+  HelpCircle, Calendar, Plus, Grid, LayoutList, X, Timer, Clock
 } from "lucide-react";
 import { 
   format, getWeekDays, getMonthDays, isSameMonth, 
@@ -19,7 +19,7 @@ export default function Timeline() {
   const navigate = useNavigate();
 
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState("week"); // 'week' | 'month'
+  const [viewMode, setViewMode] = useState("week"); // "day", "week" or "month"
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -29,10 +29,12 @@ export default function Timeline() {
   }, [timetables]);
 
   const HOURS = Array.from({ length: 24 }, (_, i) => i);
-  const HOUR_HEIGHT = 60; // px per hour in the timeline grid
+  const HOUR_HEIGHT = 100; // px per hour in the timeline grid
 
   const weekDays = useMemo(() => getWeekDays(currentDate), [currentDate]);
   const monthDays = useMemo(() => getMonthDays(currentDate), [currentDate]);
+  
+  const displayDays = useMemo(() => viewMode === "day" ? [currentDate] : weekDays, [viewMode, currentDate, weekDays]);
 
   const handlePrev = () => {
     setCurrentDate(prev => viewMode === "week" ? subWeeks(prev, 1) : subMonths(prev, 1));
@@ -42,6 +44,7 @@ export default function Timeline() {
   };
   const handleToday = () => {
     setCurrentDate(new Date());
+    setViewMode("day");
   };
 
   const parseTimeToDecimal = (timeStr) => {
@@ -72,7 +75,7 @@ export default function Timeline() {
     return {
       isFlexible: false,
       top: Math.max(0, top),
-      height: isBreak ? height : Math.max(28, height)
+      height: isBreak ? height : Math.max(54, height)
     };
   };
 
@@ -214,35 +217,35 @@ export default function Timeline() {
         key={idx}
         style={cardStyle}
         onClick={() => setSelectedEvent({ ...slot, dateStr })}
-        className={`rounded-xl border p-1.5 text-left flex flex-col justify-between overflow-hidden transition-all text-[11px] ${
+        className={`group rounded-2xl border p-2 text-left flex flex-col justify-between overflow-hidden transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 z-10 ${
           isCompleted
-            ? "bg-emerald-500/10 border-emerald-500/25 opacity-80 cursor-pointer hover:bg-emerald-500/15"
-            : "bg-brand-500/10 border-brand-500/20 hover:border-brand-500/40 cursor-pointer hover:bg-brand-500/15 shadow-sm"
+            ? "bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/60 opacity-80 cursor-pointer hover:bg-emerald-100/80 dark:hover:bg-emerald-900/40"
+            : "bg-gradient-to-br from-white to-brand-50/50 dark:from-slate-900 dark:to-brand-950/30 border-brand-200/60 dark:border-brand-800/60 cursor-pointer shadow-brand-500/5 hover:border-brand-400/50 dark:hover:border-brand-500/50"
         }`}
         title={`${slot.subject} (${slot.time})`}
       >
-        <div className="flex items-start justify-between gap-1 w-full min-w-0">
+        <div className="flex items-start justify-between gap-1.5 w-full min-w-0">
           <div className="min-w-0 flex-1">
-            <span className={`font-bold block truncate leading-tight ${
-              isCompleted ? "text-slate-400 dark:text-slate-500 line-through decoration-slate-400/50" : "text-slate-800 dark:text-slate-200"
+            <span className={`font-bold block truncate leading-tight text-sm ${
+              isCompleted ? "text-emerald-700/60 dark:text-emerald-500/50 line-through decoration-emerald-500/30" : "text-slate-800 dark:text-slate-100"
             }`}>
               {slot.subject}
             </span>
-            {pos.height > 40 && <span className="text-[9px] text-slate-450 truncate block leading-none">{slot.type}</span>}
+            {pos.height > 50 && <span className={`text-[10px] mt-1 font-semibold truncate block leading-none ${isCompleted ? 'text-emerald-600/50' : 'text-brand-600/80 dark:text-brand-400/80'}`}>{slot.type}</span>}
           </div>
           <button
             onClick={(e) => handleEventComplete(e, dateStr, slot)}
-            className={`p-0.5 rounded transition-colors cursor-pointer flex-shrink-0 ${
-              isCompleted ? "text-emerald-500 hover:text-slate-400" : "text-slate-300 hover:text-emerald-500 dark:text-slate-700"
+            className={`p-1.5 rounded-full transition-all cursor-pointer flex-shrink-0 ${
+              isCompleted ? "bg-emerald-500 text-white shadow-sm hover:bg-emerald-600" : "bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-900/50 shadow-sm border border-slate-200 dark:border-slate-700"
             }`}
           >
-            <CheckCircle2 className={`w-3.5 h-3.5 ${isCompleted ? "fill-emerald-500/10" : ""}`} />
+            <CheckCircle2 className={`w-3.5 h-3.5`} />
           </button>
         </div>
-        {pos.height > 50 && (
-          <div className="flex items-center justify-between text-[9px] text-slate-400 mt-0.5 font-mono leading-none">
-            <span>{slot.time.split("-")[0].trim()}</span>
-            <span>{slot.duration}m</span>
+        {pos.height >= 70 && (
+          <div className={`flex items-center justify-between text-[10px] font-mono leading-none mt-2 font-medium ${isCompleted ? 'text-emerald-600/60' : 'text-slate-500 dark:text-slate-400'}`}>
+            <span className="flex items-center gap-1"><Clock className="w-3 h-3"/> {slot.time.split("-")[0].trim()}</span>
+            <span className="bg-white/60 dark:bg-slate-950/40 px-1.5 py-0.5 rounded-md">{slot.duration}m</span>
           </div>
         )}
       </div>
@@ -277,6 +280,9 @@ export default function Timeline() {
 
           {/* Controls */}
           <div className="flex items-center bg-slate-100 dark:bg-slate-900 rounded-xl p-1 shadow-inner border border-slate-200 dark:border-slate-800">
+            <button onClick={() => setViewMode("day")} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${viewMode === "day" ? "bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}>
+              <CalendarDays className="w-3.5 h-3.5" /> Day
+            </button>
             <button onClick={() => setViewMode("week")} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${viewMode === "week" ? "bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"}`}>
               <LayoutList className="w-3.5 h-3.5" /> Week
             </button>
@@ -292,7 +298,7 @@ export default function Timeline() {
             <div className="flex items-center bg-slate-100 dark:bg-slate-900 rounded-xl p-1 border border-slate-200 dark:border-slate-800">
               <button onClick={handlePrev} className="p-1 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors text-slate-500 cursor-pointer"><ChevronLeft className="w-4 h-4" /></button>
               <div className="px-2 text-xs font-bold text-slate-700 dark:text-slate-300 min-w-[120px] text-center">
-                {viewMode === "week" ? `${format(weekDays[0], 'MMM d')} - ${format(weekDays[6], 'MMM d, yyyy')}` : format(currentDate, 'MMMM yyyy')}
+                {viewMode === "day" ? format(currentDate, 'EEEE, MMM d') : viewMode === "week" ? `${format(weekDays[0], 'MMM d')} - ${format(weekDays[6], 'MMM d, yyyy')}` : format(currentDate, 'MMMM yyyy')}
               </div>
               <button onClick={handleNext} className="p-1 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors text-slate-500 cursor-pointer"><ChevronRight className="w-4 h-4" /></button>
             </div>
@@ -331,14 +337,14 @@ export default function Timeline() {
       ) : (
         <div className="glass-panel flex-1 rounded-3xl overflow-hidden flex flex-col min-h-0 bg-white/50 dark:bg-slate-950/50">
           
-          {/* Week View */}
-          {viewMode === "week" && (
+          {/* Day / Week View */}
+          {(viewMode === "week" || viewMode === "day") && (
             <div className="flex-1 flex flex-col h-full overflow-hidden">
               {/* Days Header */}
               <div className="flex border-b border-slate-200/50 dark:border-slate-800/40 bg-slate-50/50 dark:bg-slate-950/50 flex-shrink-0 pr-2">
                 <div className="w-16 flex-shrink-0" /> {/* Time axis padding */}
-                <div className="flex-1 grid grid-cols-7">
-                  {weekDays.map((day, i) => {
+                <div className={`flex-1 grid ${viewMode === "day" ? "grid-cols-1" : "grid-cols-7"}`}>
+                  {displayDays.map((day, i) => {
                     const today = isToday(day);
                     return (
                       <div key={i} className={`py-2 flex flex-col items-center justify-center border-l border-slate-200/40 dark:border-slate-800/40 ${today ? 'bg-brand-500/5 dark:bg-brand-500/10' : ''}`}>
@@ -373,8 +379,8 @@ export default function Timeline() {
                   </div>
 
                   {/* Columns */}
-                  <div className="flex-1 grid grid-cols-7 relative">
-                    {weekDays.map((day, i) => {
+                  <div className={`flex-1 grid ${viewMode === "day" ? "grid-cols-1" : "grid-cols-7"} relative`}>
+                    {displayDays.map((day, i) => {
                       const daySchedule = getCombinedDaySchedule(day);
                       return (
                         <div key={i} className="relative border-l border-slate-200/20 dark:border-slate-800/20">

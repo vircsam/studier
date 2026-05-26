@@ -154,144 +154,144 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(103,232,249,0.2),_transparent_24%),radial-gradient(circle_at_85%_15%,_rgba(96,165,250,0.18),_transparent_20%),linear-gradient(180deg,_#081120_0%,_#0c1728_48%,_#102036_100%)] text-slate-100 flex items-center justify-center p-4 relative overflow-hidden font-sans">
-      {/* Decorative Orbs */}
-      <div className="absolute top-[-10%] left-[-15%] w-[40%] h-[40%] rounded-full bg-brand-500/10 blur-[130px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-15%] w-[40%] h-[40%] rounded-full bg-blue-500/10 blur-[130px] pointer-events-none" />
+    <div className="min-h-screen bg-white text-slate-800 flex items-center justify-center p-4 relative overflow-hidden font-sans">
+      {/* Decorative Light Orbs */}
+      <div className="absolute top-[-10%] left-[-15%] w-[40%] h-[40%] rounded-full bg-brand-200/50 blur-[130px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-15%] w-[40%] h-[40%] rounded-full bg-green-200/50 blur-[130px] pointer-events-none" />
 
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
+        className="w-full max-w-md z-10"
       >
         {/* Branding header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-[1.75rem] bg-black/80 border border-sky-100/70 shadow-[0_24px_50px_rgba(34,211,238,0.18)] mb-4 backdrop-blur-md">
-            <img src="/logo.png" alt="Studier logo" className="w-14 h-14 object-contain" />
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-white border border-brand-100 shadow-[0_24px_50px_rgba(6,182,212,0.15)] mb-6">
+            <img src="/logo.png" alt="Studier logo" className="w-16 h-16 object-cover rounded-full" />
           </div>
-          <h2 className="text-3xl font-extrabold tracking-tight">
-            {isSignUp ? "Create an account" : "Welcome back"}
+          <h2 className="amita-bold text-4xl font-extrabold tracking-tight text-slate-900">
+            {isSignUp ? "Create Account" : "Welcome Back"}
           </h2>
-          <p className="text-sm text-slate-400 mt-2">
-            {isSignUp ? "Start learning smarter today with Studier" : "Log in to resume your study streaks"}
+          <p className="amita-regular text-lg text-slate-500 mt-2">
+            {isSignUp ? "Start learning smarter today" : "Log in to resume your progress"}
           </p>
         </div>
 
         {/* Local storage warning indicator */}
         {isMockMode && (
-          <div className="mb-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-500 space-y-2">
-            <div className="flex items-center gap-2 font-bold">
+          <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-700 space-y-2 shadow-sm">
+            <div className="flex items-center gap-2 font-bold text-amber-800">
               <Database className="w-4 h-4" />
-              <span>Running in offline Mock Mode</span>
+              <span>Offline Mock Mode</span>
             </div>
-            <p className="text-slate-400">
-              Firebase credentials are not set. You can log in or register with **any** credentials. Data will be saved locally to your browser.
+            <p className="text-amber-600/80">
+              You can log in with **any** credentials. Data is saved locally.
             </p>
           </div>
         )}
 
-        {/* Form Container */}
-        <div className="bg-slate-950/38 backdrop-blur-xl border border-sky-100/10 p-8 rounded-3xl shadow-[0_30px_90px_rgba(2,6,23,0.5)] space-y-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Form Container - Premium Light Glassmorphism */}
+        <div className="bg-white/80 backdrop-blur-2xl border border-brand-100 p-8 rounded-[2rem] shadow-[0_30px_80px_rgba(6,182,212,0.1)] space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {isSignUp && (
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Full Name</label>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Full Name</label>
                 <div className="relative">
-                  <User className="absolute left-3.5 top-3 w-5 h-5 text-slate-500" />
+                  <User className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" />
                   <input
                     type="text"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
                     placeholder="Enter your name"
                     disabled={loading}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl pl-11 pr-4 py-3 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 text-sm transition-all"
+                    className="w-full bg-slate-50/50 border border-slate-200 rounded-2xl pl-12 pr-4 py-3.5 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20 text-sm font-medium text-slate-800 transition-all placeholder:text-slate-400"
                   />
                 </div>
               </div>
             )}
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Email Address</label>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Email Address</label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-3 w-5 h-5 text-slate-500" />
+                <Mail className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="student@university.edu"
                   disabled={loading}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl pl-11 pr-4 py-3 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 text-sm transition-all"
+                  className="w-full bg-slate-50/50 border border-slate-200 rounded-2xl pl-12 pr-4 py-3.5 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20 text-sm font-medium text-slate-800 transition-all placeholder:text-slate-400"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Password</label>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Password</label>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-3 w-5 h-5 text-slate-500" />
+                <Lock className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" />
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   disabled={loading}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl pl-11 pr-4 py-3 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 text-sm transition-all"
+                  className="w-full bg-slate-50/50 border border-slate-200 rounded-2xl pl-12 pr-4 py-3.5 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20 text-sm font-medium text-slate-800 transition-all placeholder:text-slate-400"
                 />
               </div>
             </div>
 
             {isSignUp && (
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Confirm Password</label>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Confirm Password</label>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-3 w-5 h-5 text-slate-500" />
+                  <Lock className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" />
                   <input
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Re-enter your password"
                     disabled={loading}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl pl-11 pr-4 py-3 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 text-sm transition-all"
+                    className="w-full bg-slate-50/50 border border-slate-200 rounded-2xl pl-12 pr-4 py-3.5 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20 text-sm font-medium text-slate-800 transition-all placeholder:text-slate-400"
                   />
                 </div>
               </div>
             )}
 
             {!isSignUp && lockedUntil && Date.now() < lockedUntil && (
-              <p className="text-xs text-amber-400 font-medium">
-                Sign-in is temporarily locked. Try again in {getRemainingLockTime(lockedUntil)}s.
+              <p className="text-xs text-rose-500 font-bold bg-rose-50 p-3 rounded-xl border border-rose-100">
+                Sign-in locked. Try again in {getRemainingLockTime(lockedUntil)}s.
               </p>
             )}
 
             <button
               type="submit"
               disabled={loading || (!isSignUp && !!lockedUntil && Date.now() < lockedUntil)}
-              className="w-full flex items-center justify-center gap-2 mt-4 px-6 py-3.5 text-sm font-semibold text-white bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 rounded-2xl shadow-lg shadow-brand-500/20 active:scale-95 disabled:opacity-50 disabled:pointer-events-none transition-all"
+              className="w-full flex items-center justify-center gap-2 mt-6 px-6 py-4 text-base font-bold text-white bg-gradient-to-r from-brand-500 to-green-500 hover:from-brand-600 hover:to-green-600 rounded-2xl shadow-xl shadow-brand-500/25 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none transition-all"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
                 <>
                   <span>{isSignUp ? "Create Account" : "Sign In"}</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-5 h-5" />
                 </>
               )}
             </button>
           </form>
 
-          <div className="relative my-4 text-center">
-            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/5"></div></div>
-            <span className="relative bg-slate-900/60 px-3 text-xs text-slate-500 uppercase tracking-wider">Or continue with</span>
+          <div className="relative my-6 text-center">
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200"></div></div>
+            <span className="relative bg-white px-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Or</span>
           </div>
 
           {/* Social Sign-in Button */}
           <button
             onClick={handleGoogleSignIn}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 px-6 py-3 border border-white/10 hover:bg-white/5 active:scale-95 rounded-2xl font-semibold text-sm text-slate-300 hover:text-white transition-all"
+            className="w-full flex items-center justify-center gap-3 px-6 py-3.5 border-2 border-slate-100 hover:bg-slate-50 active:scale-[0.98] rounded-2xl font-bold text-sm text-slate-700 transition-all shadow-sm"
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+            <svg className="w-5 h-5" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
               <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
               <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
@@ -307,7 +307,7 @@ export default function Login() {
                 setIsSignUp(!isSignUp);
                 setConfirmPassword("");
               }}
-              className="text-xs font-medium text-brand-400 hover:text-brand-300 transition-colors"
+              className="text-sm font-bold text-brand-600 hover:text-brand-700 transition-colors"
             >
               {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
             </button>
