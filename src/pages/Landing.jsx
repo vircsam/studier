@@ -15,6 +15,13 @@ export default function Landing() {
   const opacityText = useTransform(scrollYProgress, [0, 0.5], [0.08, 0]);
   const orbY1 = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
   const orbY2 = useTransform(scrollYProgress, [0, 1], ["0%", "-50%"]);
+  const dashY = useTransform(scrollYProgress, [0, 1], [0, 150]);
+  
+  // Features Parallax
+  const featY1 = useTransform(scrollYProgress, [0.3, 1], [50, -50]);
+  const featY2 = useTransform(scrollYProgress, [0.4, 1], [80, -20]);
+  const featY3 = useTransform(scrollYProgress, [0.3, 1], [30, -60]);
+  const featY4 = useTransform(scrollYProgress, [0.5, 1], [100, -40]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -187,6 +194,7 @@ export default function Landing() {
 
           {/* Floating Dashboard Preview Card */}
           <motion.div
+            style={{ y: dashY }}
             variants={floatAnimation}
             animate="animate"
             className="mt-20 w-full max-w-5xl rounded-[2.5rem] overflow-hidden border border-white/40 bg-white/40 backdrop-blur-2xl p-3 shadow-[0_30px_80px_rgba(6,182,212,0.15)] will-change-transform"
@@ -248,15 +256,27 @@ export default function Landing() {
         </section>
 
         {/* Uneven Bento Box Grid for Features */}
-        <section id="features" className="px-6 py-24 max-w-7xl mx-auto z-10 relative">
-          <div className="text-center max-w-3xl mx-auto mb-20 space-y-6">
+        <motion.section 
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={containerVariants}
+          id="features" 
+          className="px-6 py-24 max-w-7xl mx-auto z-10 relative"
+        >
+          <motion.div variants={itemVariants} className="text-center max-w-3xl mx-auto mb-20 space-y-6">
             <h2 className="text-4xl sm:text-6xl font-black tracking-tight text-slate-800">Unfair Advantage.</h2>
             <p className="text-xl text-slate-500 font-medium">Stop grinding. Start optimizing. The science of high-performance learning packed into one beautiful interface.</p>
-          </div>
+          </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-auto md:auto-rows-[300px]">
             {/* Box 1: Spaced Repetition (Spans 2 cols, 2 rows) */}
-            <div className="col-span-1 md:col-span-2 row-span-1 md:row-span-2 p-8 md:p-12 rounded-[2.5rem] bg-gradient-to-br from-brand-500 via-brand-600 to-indigo-600 text-white shadow-2xl hover:shadow-brand-500/30 transition-all flex flex-col justify-between group overflow-hidden relative border border-white/10">
+            <motion.div 
+              style={{ y: featY1 }}
+              variants={itemVariants} 
+              whileHover={{ y: -10, scale: 1.02 }}
+              className="col-span-1 md:col-span-2 row-span-1 md:row-span-2 p-8 md:p-12 rounded-[2.5rem] bg-gradient-to-br from-brand-500 via-brand-600 to-indigo-600 text-white shadow-2xl hover:shadow-brand-500/30 transition-all flex flex-col justify-between group overflow-hidden relative border border-white/10"
+            >
               <div className="absolute -right-10 -bottom-10 w-80 h-80 bg-white/10 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700" />
               <div className="absolute top-10 right-10 text-white/20 group-hover:text-white/40 transition-colors">
                 <Brain className="w-32 h-32" />
@@ -270,10 +290,15 @@ export default function Landing() {
                 <h3 className="text-3xl font-black mb-4">Neural Spaced Repetition</h3>
                 <p className="text-brand-100 text-lg font-medium leading-relaxed max-w-md">Our SM-2 based algorithm calculates exactly when you're about to forget a concept, and tests you right before you do. Cut study time by 50% and retain 80% more.</p>
               </div>
-            </div>
+            </motion.div>
 
             {/* Box 2: Pomodoro Timer (1 col, 1 row) */}
-            <div className="col-span-1 row-span-1 p-8 rounded-[2.5rem] bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-xl hover:shadow-amber-500/30 transition-all flex flex-col group overflow-hidden relative border border-white/10">
+            <motion.div 
+              style={{ y: featY2 }}
+              variants={itemVariants} 
+              whileHover={{ y: -10, scale: 1.05 }}
+              className="col-span-1 row-span-1 p-8 rounded-[2.5rem] bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-xl hover:shadow-amber-500/30 transition-all flex flex-col group overflow-hidden relative border border-white/10"
+            >
               <div className="absolute -right-5 -top-5 w-40 h-40 bg-white/20 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-500" />
               <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-6 z-10">
                 <Clock className="w-6 h-6 text-white" />
@@ -282,10 +307,15 @@ export default function Landing() {
                 <h3 className="text-2xl font-bold mb-2">Deep Focus Timer</h3>
                 <p className="text-amber-50 font-medium">Enter flow state with integrated Pomodoro tracking. Automatically logs to your analytics.</p>
               </div>
-            </div>
+            </motion.div>
 
             {/* Box 3: Timetable (1 col, 1 row) */}
-            <div className="col-span-1 row-span-1 p-8 rounded-[2.5rem] bg-gradient-to-br from-green-400 to-emerald-600 text-white shadow-xl hover:shadow-green-500/30 transition-all flex flex-col group overflow-hidden relative border border-white/10">
+            <motion.div 
+              style={{ y: featY3 }}
+              variants={itemVariants} 
+              whileHover={{ y: -10, scale: 1.05 }}
+              className="col-span-1 row-span-1 p-8 rounded-[2.5rem] bg-gradient-to-br from-green-400 to-emerald-600 text-white shadow-xl hover:shadow-green-500/30 transition-all flex flex-col group overflow-hidden relative border border-white/10"
+            >
               <div className="absolute -left-5 -bottom-5 w-40 h-40 bg-white/20 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-500" />
               <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-6 z-10">
                 <Calendar className="w-6 h-6 text-white" />
@@ -294,10 +324,15 @@ export default function Landing() {
                 <h3 className="text-2xl font-bold mb-2">Smart Timetables</h3>
                 <p className="text-green-50 font-medium">Input your subjects and deadlines. We generate an optimized, realistic daily routine.</p>
               </div>
-            </div>
+            </motion.div>
             
             {/* Box 4: Analytics (Spans 3 cols, 1 row) */}
-            <div className="col-span-1 md:col-span-3 row-span-1 p-8 md:p-12 rounded-[2.5rem] bg-slate-900 text-white shadow-2xl hover:shadow-slate-500/20 transition-all flex flex-col md:flex-row items-start md:items-center justify-between group overflow-hidden relative border border-slate-800">
+            <motion.div 
+              style={{ y: featY4 }}
+              variants={itemVariants} 
+              whileHover={{ y: -5, scale: 1.01 }}
+              className="col-span-1 md:col-span-3 row-span-1 p-8 md:p-12 rounded-[2.5rem] bg-slate-900 text-white shadow-2xl hover:shadow-slate-500/20 transition-all flex flex-col md:flex-row items-start md:items-center justify-between group overflow-hidden relative border border-slate-800"
+            >
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(ellipse_at_center,rgba(56,189,248,0.1)_0%,transparent_60%)] group-hover:opacity-100 opacity-50 transition-opacity" />
               <div className="relative z-10 max-w-lg mb-8 md:mb-0">
                 <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center mb-6">
@@ -320,9 +355,9 @@ export default function Landing() {
                   <span className="text-slate-400 font-bold mt-3">Wed</span>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
-        </section>
+        </motion.section>
 
         {/* Infinite Scrolling Reviews Marquee */}
         <section id="reviews" className="py-24 bg-slate-50/50 border-y border-slate-100 overflow-hidden relative">
