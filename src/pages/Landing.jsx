@@ -93,17 +93,17 @@ export default function Landing() {
       <div className="flex-1 relative z-10" ref={targetRef}>
 
         {/* Floating Navbar */}
-        <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
-          <header className="pointer-events-auto flex items-center justify-between w-full max-w-5xl h-16 px-6 backdrop-blur-xl bg-white/70 border border-white/80 shadow-[0_8px_32px_rgba(0,0,0,0.05)] rounded-full">
-            <div className="flex items-center gap-3 cursor-pointer group">
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-brand-100 shadow-sm overflow-hidden group-hover:scale-105 transition-transform">
+        <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-2 sm:px-4 pointer-events-none">
+          <header className="pointer-events-auto flex items-center justify-between w-full max-w-5xl h-14 sm:h-16 px-3 sm:px-6 backdrop-blur-xl bg-white/70 border border-white/80 shadow-[0_8px_32px_rgba(0,0,0,0.05)] rounded-full">
+            <div className="flex items-center gap-2 sm:gap-3 cursor-pointer group shrink-0">
+              <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white border border-brand-100 shadow-sm overflow-hidden group-hover:scale-105 transition-transform">
                 <img
                   src="/logo.png"
                   alt="Studier logo"
-                  className="w-8 h-8 object-cover rounded-full"
+                  className="w-6 h-6 sm:w-8 sm:h-8 object-cover rounded-full"
                 />
               </div>
-              <span className="text-2xl font-extrabold tracking-tight text-slate-800">
+              <span className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-800">
                 Studier
               </span>
             </div>
@@ -114,16 +114,16 @@ export default function Landing() {
               <a href="#pricing" className="text-sm font-bold text-slate-600 hover:text-brand-600 transition-colors">Pricing</a>
             </div>
 
-            <div className="flex items-center gap-1 sm:gap-3">
+            <div className="flex items-center gap-1 sm:gap-3 shrink-0">
               <Link
                 to="/login"
-                className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-brand-600 hover:bg-slate-50 rounded-full transition-all whitespace-nowrap"
+                className="px-2 sm:px-4 py-2 text-xs sm:text-sm font-bold text-slate-600 hover:text-brand-600 hover:bg-slate-50 rounded-full transition-all whitespace-nowrap"
               >
                 Sign In
               </Link>
               <Link
                 to="/login?signup=true"
-                className="px-6 py-2.5 text-sm font-bold text-white bg-slate-900 hover:bg-brand-600 rounded-full shadow-lg shadow-slate-900/20 hover:shadow-brand-500/30 hover:-translate-y-0.5 active:translate-y-0 transition-all whitespace-nowrap"
+                className="px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-white bg-slate-900 hover:bg-brand-600 rounded-full shadow-lg shadow-slate-900/20 hover:shadow-brand-500/30 hover:-translate-y-0.5 active:translate-y-0 transition-all whitespace-nowrap"
               >
                 Get Started
               </Link>
