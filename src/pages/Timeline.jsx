@@ -41,7 +41,7 @@ export default function Timeline() {
   const displayDays = useMemo(() => {
     if (viewMode === "day") return [currentDate];
     if (viewMode === "week") return eachDayOfInterval({ start: weekStart, end: weekEnd });
-    return eachDayOfInterval({ start: monthStart, end: monthEnd });
+    return eachDayOfInterval({ start: startOfWeek(monthStart), end: endOfWeek(monthEnd) });
   }, [viewMode, currentDate, weekStart, weekEnd, monthStart, monthEnd]);
 
   useEffect(() => {
@@ -450,7 +450,7 @@ export default function Timeline() {
 
           {/* Month View */}
           {viewMode === "month" && (
-            <div className="flex-1 flex flex-col h-full overflow-hidden">
+            <div className="flex-1 flex flex-col h-full overflow-hidden bg-white">
               {/* Days Header */}
               <div className="grid grid-cols-7 border-b border-slate-200/50 dark:border-slate-800/40 bg-slate-50/50 dark:bg-slate-950/50 flex-shrink-0">
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d, i) => (
@@ -461,7 +461,7 @@ export default function Timeline() {
               </div>
 
               {/* Month Grid */}
-              <div className="flex-1 grid grid-cols-7 auto-rows-fr">
+              <div className="flex-1 grid grid-cols-7 overflow-y-auto auto-rows-[minmax(120px,1fr)]">
                 {displayDays.map((day, i) => {
                   const daySchedule = getCombinedDaySchedule(day);
                   const isCurrentMonth = isSameMonth(day, currentDate);
@@ -469,7 +469,7 @@ export default function Timeline() {
                   const dateStr = format(day, 'yyyy-MM-dd');
 
                   return (
-                    <div key={i} className={`border-l border-b border-slate-200/40 dark:border-slate-800/40 p-1.5 flex flex-col transition-colors ${isCurrentMonth ? 'bg-transparent' : 'bg-slate-50/30 dark:bg-slate-900/10'}`}>
+                    <div key={i} className={`border-l border-b border-slate-200/40 dark:border-slate-800/40 p-1.5 flex flex-col transition-colors min-h-[120px] ${isCurrentMonth ? 'bg-transparent' : 'bg-slate-50/30 dark:bg-slate-900/10'}`}>
                       <div className="flex justify-between items-start mb-1">
                         <span className={`w-6 h-6 flex items-center justify-center rounded-full text-[10px] font-bold ${today ? 'bg-brand-500 text-white' : isCurrentMonth ? 'text-slate-700 dark:text-slate-300' : 'text-slate-300 dark:text-slate-600'}`}>
                           {format(day, 'd')}

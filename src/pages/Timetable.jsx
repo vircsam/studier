@@ -701,15 +701,15 @@ export default function Timetable() {
             </div>
           </div>
 
-          {/* Target Hours Select */}
-          <div className="glass-panel p-6 rounded-3xl space-y-4">
+          {/* Target Hours & Exam Dates Select */}
+          <div className="glass-panel p-6 rounded-3xl space-y-6">
             <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 text-sm border-b border-slate-200/50 dark:border-slate-800/40 pb-3">
-              2. Study Hours & Day Option
+              2. Parameters & Deadlines
             </h3>
             <div className="space-y-4">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-400">Daily focus study goal:</span>
+                  <span className="text-xs text-slate-400 font-semibold">Daily focus study goal:</span>
                   <span className="text-sm font-bold text-brand-600 dark:text-brand-400">{dailyHours} Hours</span>
                 </div>
                 <input
@@ -728,10 +728,10 @@ export default function Timetable() {
               </div>
 
               {/* Target Day Selector */}
-              <div className="space-y-2 pt-3.5 border-t border-slate-200/40 dark:border-slate-800/40">
+              <div className="space-y-2 pt-3 border-t border-slate-200/40 dark:border-slate-800/40">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-semibold text-slate-500">Generate for:</label>
-                  <span className="text-xs font-bold text-brand-600 dark:text-brand-400">
+                  <span className="text-xs font-bold text-brand-600 dark:text-brand-400 truncate max-w-[120px] text-right">
                     {selectedGenerateDay === "Specific Date" ? specificDate : selectedGenerateDay}
                   </span>
                 </div>
@@ -756,31 +756,30 @@ export default function Timetable() {
                   />
                 )}
               </div>
-            </div>
-          </div>
-
-          {/* Exam Dates scheduler */}
-          <div className="glass-panel p-6 rounded-3xl space-y-4">
-            <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 text-sm border-b border-slate-200/50 dark:border-slate-800/40 pb-3">
-              3. Exam Deadlines (Optional)
-            </h3>
-            {subjects.length > 0 ? (
-              <div className="space-y-3 max-h-48 overflow-y-auto pr-1">
-                {subjects.map((sub, i) => (
-                  <div key={i} className="space-y-1">
-                    <label className="text-[10px] font-semibold text-slate-400 block">{sub.name}</label>
-                    <input
-                      type="date"
-                      value={examDates[sub.name] || ""}
-                      onChange={(e) => handleExamDateChange(sub.name, e.target.value)}
-                      className="w-full bg-slate-100/50 dark:bg-slate-950/40 border border-slate-200/50 dark:border-slate-800/40 rounded-xl px-3 py-1.5 text-xs outline-none focus:border-brand-500 cursor-pointer"
-                    />
+              
+              {/* Exam Deadlines (Optional) inside Box 2 */}
+              <div className="space-y-3 pt-3 border-t border-slate-200/40 dark:border-slate-800/40">
+                <label className="text-xs font-semibold text-slate-500">Exam Deadlines (Optional)</label>
+                {subjects.length > 0 ? (
+                  <div className="space-y-3 max-h-48 overflow-y-auto pr-1">
+                    {subjects.map((sub, i) => (
+                      <div key={i} className="flex flex-col space-y-1">
+                        <label className="text-[10px] font-semibold text-slate-400 truncate">{sub.name}</label>
+                        <input
+                          type="date"
+                          value={examDates[sub.name] || ""}
+                          onChange={(e) => handleExamDateChange(sub.name, e.target.value)}
+                          className="w-full bg-slate-100/50 dark:bg-slate-950/40 border border-slate-200/50 dark:border-slate-800/40 rounded-xl px-3 py-1.5 text-xs outline-none focus:border-brand-500 cursor-pointer"
+                        />
+                      </div>
+                    ))}
                   </div>
-                ))}
+                ) : (
+                  <p className="text-xs text-slate-400 italic">Add subjects above to set deadlines</p>
+                )}
               </div>
-            ) : (
-              <p className="text-center text-xs text-slate-400 py-4">Add study subjects first</p>
-            )}
+
+            </div>
           </div>
 
           <button

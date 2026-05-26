@@ -161,17 +161,17 @@ export default function Dashboard() {
           </p>
         </div>
         
-        <div className="flex items-center gap-4 flex-shrink-0 z-10">
-          <div className="px-6 py-4 rounded-3xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl border border-white/80 dark:border-slate-700 flex flex-col items-center shadow-lg shadow-brand-500/5">
-            <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider mb-1">Streak</span>
-            <span className="amita-bold text-xl flex items-center gap-2 text-amber-500">
-              <Award className="w-6 h-6" />
+        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 flex-shrink-0 z-10 mt-4 md:mt-0 w-full md:w-auto">
+          <div className="flex-1 min-w-[120px] px-4 sm:px-6 py-4 rounded-3xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl border border-white/80 dark:border-slate-700 flex flex-col items-center shadow-lg shadow-brand-500/5">
+            <span className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider mb-1">Streak</span>
+            <span className="amita-bold text-lg sm:text-xl flex items-center gap-1 sm:gap-2 text-amber-500">
+              <Award className="w-5 h-5 sm:w-6 sm:h-6" />
               {streak} Days
             </span>
           </div>
-          <div className="px-6 py-4 rounded-3xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl border border-white/80 dark:border-slate-700 flex flex-col items-center shadow-lg shadow-green-500/5">
-            <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider mb-1">Productivity</span>
-            <span className="amita-bold text-xl text-brand-600 dark:text-brand-400">
+          <div className="flex-1 min-w-[120px] px-4 sm:px-6 py-4 rounded-3xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl border border-white/80 dark:border-slate-700 flex flex-col items-center shadow-lg shadow-green-500/5">
+            <span className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider mb-1">Productivity</span>
+            <span className="amita-bold text-lg sm:text-xl text-brand-600 dark:text-brand-400">
               {productivityScore}%
             </span>
           </div>
@@ -310,30 +310,39 @@ export default function Dashboard() {
               upcomingExams.map((exam, i) => (
                 <div 
                   key={i}
-                  className={`p-5 rounded-2xl border flex items-center justify-between shadow-sm ${
-                    exam.diffDays <= 3 
-                      ? "bg-rose-50 border-rose-200 dark:bg-rose-950/20 dark:border-rose-900/50" 
-                      : "bg-white/50 dark:bg-slate-900/40 border-brand-50 dark:border-slate-800"
-                  }`}
+                  className="group relative flex items-center gap-4 py-4 border-b border-slate-100 dark:border-slate-800/60 last:border-0"
                 >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-sm text-slate-800 dark:text-slate-200">{exam.subject}</span>
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${
+                    exam.diffDays <= 3 
+                      ? "bg-rose-50 text-rose-500 dark:bg-rose-500/10" 
+                      : "bg-brand-50 text-brand-500 dark:bg-brand-500/10"
+                  }`}>
+                    {exam.diffDays <= 3 ? <AlertCircle className="w-6 h-6" /> : <Award className="w-6 h-6" />}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="font-bold text-slate-800 dark:text-slate-200 truncate">{exam.subject}</span>
                       {exam.diffDays <= 3 && (
-                        <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-rose-500 text-white">
-                          <AlertCircle className="w-3 h-3" />
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400 flex-shrink-0">
                           Urgent
                         </span>
                       )}
                     </div>
-                    <span className="text-sm text-slate-500 dark:text-slate-400 block">{new Date(exam.dateStr).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric'})}</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 block truncate">
+                      {new Date(exam.dateStr).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric'})}
+                    </span>
                   </div>
-                  <div className="text-right flex flex-col items-end gap-1">
-                     <span className={`amita-bold text-lg ${exam.diffDays <= 3 ? "text-rose-500" : "text-brand-500 dark:text-brand-400"}`}>
+
+                  <div className="text-right flex flex-col items-end gap-1 flex-shrink-0">
+                     <span className={`text-xl font-bold font-sans tracking-tight ${exam.diffDays <= 3 ? "text-rose-500" : "text-brand-600 dark:text-brand-400"}`}>
                       {exam.diffDays === 0 ? "Today" : `${exam.diffDays}d`}
                     </span>
-                    <button onClick={() => handleCompleteExam(exam.subject)} className="text-[10px] flex items-center gap-1 font-semibold text-slate-400 hover:text-emerald-500 transition-colors">
-                      <CheckCircle className="w-3 h-3" /> Mark Done
+                    <button 
+                      onClick={() => handleCompleteExam(exam.subject)} 
+                      className="opacity-0 group-hover:opacity-100 text-[10px] flex items-center gap-1 font-semibold text-slate-400 hover:text-emerald-500 transition-all transform translate-y-1 group-hover:translate-y-0"
+                    >
+                      <CheckCircle className="w-3.5 h-3.5" /> Done
                     </button>
                   </div>
                 </div>
