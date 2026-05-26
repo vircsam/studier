@@ -1,11 +1,11 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useFirestore } from "../hooks/useFirestore";
 import { useToast } from "../context/ToastContext";
 import { useStore } from "../store/useStore";
 import { 
   CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, 
-  HelpCircle, Calendar, Plus, Grid, LayoutList
+  HelpCircle, Calendar, Plus, Grid, LayoutList, X, Timer
 } from "lucide-react";
 import { 
   format, getWeekDays, getMonthDays, isSameMonth, 
@@ -14,12 +14,15 @@ import {
 
 export default function Timeline() {
   const { timetables } = useFirestore();
-  const { timelineCompletions, toggleTimelineCompletion } = useStore();
+  const { timelineCompletions, toggleTimelineCompletion, calendarEvents, addCalendarEvent, toggleCalendarEvent } = useStore();
   const { showToast } = useToast();
   const navigate = useNavigate();
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState("week"); // 'week' | 'month'
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   const activeTimetable = useMemo(() => {
     return timetables[0] || null;
@@ -83,26 +86,113 @@ export default function Timeline() {
     }
   };
 
-  const getDaySchedule = (date) => {
-    if (!activeTimetable?.schedule) return null;
-    const dayName = format(date, 'EEEE');
-    return activeTimetable.schedule.find(s => s.day === dayName);
+  const getCombinedDaySchedule = (date) => {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    let slots = [];
+    
+    // 1. Repeating Weekly Routine
+    if (activeTimetable?.schedule) {
+      const dayName = format(date, 'EEEE');
+      const specificDate = activeTimetable.schedule.find(s => s.day === dateStr);
+      if (specificDate?.slots) {
+        slots = [...specificDate.slots.map((s, idx) => ({ ...s, isRepeating: true, originalIndex: idx }))];
+      } else {
+        const repeating = activeTimetable.schedule.find(s => s.day === dayName);
+        if (repeating?.slots) {
+          const timetableDate = activeTimetable.createdAt ? new Date(activeTimetable.createdAt) : new Date();
+          if (date.getMonth() === timetableDate.getMonth() && date.getFullYear() === timetableDate.getFullYear()) {
+            slots = [...repeating.slots.map((s, idx) => ({ ...s, isRepeating: true, originalIndex: idx }))];
+          }
+        }
+      }
+    }
+    
+    // 2. One-off Events
+    const oneOffs = calendarEvents[dateStr] || [];
+    slots = [...slots, ...oneOffs.map(s => ({ ...s, isOneOff: true }))];
+    
+    // Sort by start time
+    slots.sort((a, b) => {
+      const aTime = parseTimeToDecimal(a.time.split("-")[0]);
+      const bTime = parseTimeToDecimal(b.time.split("-")[0]);
+      return (aTime || 0) - (bTime || 0);
+    });
+    
+    // Overlap logic
+    const overlappingGroups = [];
+    slots.forEach(slot => {
+      const start = parseTimeToDecimal(slot.time.split("-")[0]) || 0;
+      const durationMins = Number(slot.duration) || 45;
+      const end = start + (durationMins / 60);
+      slot.start = start;
+      slot.end = end;
+      
+      let placed = false;
+      for (const group of overlappingGroups) {
+        if (group.some(s => s.start < end && s.end > start)) {
+           group.push(slot);
+           placed = true;
+           break;
+        }
+      }
+      if (!placed) {
+        overlappingGroups.push([slot]);
+      }
+    });
+
+    overlappingGroups.forEach(group => {
+      const columns = [];
+      group.forEach(slot => {
+         let colIdx = 0;
+         while (columns[colIdx] && columns[colIdx].some(s => s.start < slot.end && s.end > slot.start)) {
+            colIdx++;
+         }
+         if (!columns[colIdx]) columns[colIdx] = [];
+         columns[colIdx].push(slot);
+      });
+      group.forEach(slot => {
+         slot.colIdx = columns.findIndex(col => col.includes(slot));
+         slot.totalCols = columns.length;
+      });
+    });
+
+    return { slots };
+  };
+
+  const handleEventComplete = async (e, dateStr, slot) => {
+    e.stopPropagation();
+    try {
+      if (slot.isRepeating) {
+        await toggleTimelineCompletion(dateStr, slot.originalIndex);
+      } else {
+        await toggleCalendarEvent(dateStr, slot.id);
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to update status", "error");
+    }
   };
 
   const renderSlotCard = (slot, idx, dayDate) => {
     const isBreak = slot.subject === "Break";
     const pos = calculateSlotPosition(slot.time, slot.duration, isBreak);
     const dateStr = format(dayDate, 'yyyy-MM-dd');
-    const isCompleted = timelineCompletions[dateStr]?.includes(idx);
+    
+    const isCompleted = slot.isRepeating 
+      ? timelineCompletions[dateStr]?.includes(slot.originalIndex)
+      : slot.completed;
 
     if (pos.isFlexible) return null;
+
+    const totalCols = slot.totalCols || 1;
+    const colIdx = slot.colIdx || 0;
 
     const cardStyle = {
       position: "absolute",
       top: `${pos.top}px`,
       height: `${pos.height}px`,
-      left: "4px",
-      right: "4px",
+      left: `calc(${(colIdx / totalCols) * 100}% + 4px)`,
+      width: `calc(${100 / totalCols}% - 8px)`,
       zIndex: isBreak ? 1 : 2
     };
 
@@ -111,7 +201,7 @@ export default function Timeline() {
         key={idx}
         style={cardStyle}
         onClick={() => {
-          if (!isBreak) navigate("/pomodoro", { state: { duration: slot.duration, subject: slot.subject } });
+          if (!isBreak) setSelectedEvent({ ...slot, dateStr });
         }}
         className={`rounded-xl border p-1.5 text-left flex flex-col justify-between overflow-hidden transition-all text-[11px] ${
           isBreak
@@ -133,7 +223,7 @@ export default function Timeline() {
           </div>
           {!isBreak && (
             <button
-              onClick={(e) => handleToggleComplete(e, dateStr, idx)}
+              onClick={(e) => handleEventComplete(e, dateStr, slot)}
               className={`p-0.5 rounded transition-colors cursor-pointer flex-shrink-0 ${
                 isCompleted ? "text-emerald-500 hover:text-slate-400" : "text-slate-300 hover:text-emerald-500 dark:text-slate-700"
               }`}
@@ -198,6 +288,18 @@ export default function Timeline() {
                 {viewMode === "week" ? `${format(weekDays[0], 'MMM d')} - ${format(weekDays[6], 'MMM d, yyyy')}` : format(currentDate, 'MMMM yyyy')}
               </div>
               <button onClick={handleNext} className="p-1 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors text-slate-500 cursor-pointer"><ChevronRight className="w-4 h-4" /></button>
+            </div>
+            <div className="flex items-center gap-2 border-l border-slate-200 dark:border-slate-800 pl-4 ml-2">
+              <button 
+                onClick={() => {
+                  setSelectedDate(new Date());
+                  setIsAddModalOpen(true);
+                }} 
+                className="px-3 py-1.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Add Event
+              </button>
             </div>
           </div>
         </div>
@@ -266,7 +368,7 @@ export default function Timeline() {
                   {/* Columns */}
                   <div className="flex-1 grid grid-cols-7 relative">
                     {weekDays.map((day, i) => {
-                      const daySchedule = getDaySchedule(day);
+                      const daySchedule = getCombinedDaySchedule(day);
                       return (
                         <div key={i} className="relative border-l border-slate-200/20 dark:border-slate-800/20">
                           {daySchedule?.slots?.map((slot, idx) => renderSlotCard(slot, idx, day))}
@@ -295,7 +397,7 @@ export default function Timeline() {
               {/* Month Grid */}
               <div className="flex-1 grid grid-cols-7 auto-rows-fr">
                 {monthDays.map((day, i) => {
-                  const daySchedule = getDaySchedule(day);
+                  const daySchedule = getCombinedDaySchedule(day);
                   const isCurrentMonth = isSameMonth(day, currentDate);
                   const today = isToday(day);
                   const dateStr = format(day, 'yyyy-MM-dd');
@@ -310,11 +412,15 @@ export default function Timeline() {
                       
                       <div className="flex-1 overflow-y-auto space-y-1 scrollbar-none pr-1">
                         {daySchedule?.slots?.filter(s => s.subject !== "Break").map((slot, idx) => {
-                          const isCompleted = timelineCompletions[dateStr]?.includes(idx);
+                          const isCompleted = slot.isRepeating 
+                            ? timelineCompletions[dateStr]?.includes(slot.originalIndex)
+                            : slot.completed;
                           return (
                             <div 
                               key={idx}
-                              onClick={() => navigate("/pomodoro", { state: { duration: slot.duration, subject: slot.subject } })}
+                              onClick={() => {
+                                if (slot.subject !== "Break") setSelectedEvent({ ...slot, dateStr });
+                              }}
                               className={`text-[9px] px-1.5 py-1 rounded truncate cursor-pointer transition-colors ${
                                 isCompleted 
                                   ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 line-through decoration-emerald-500/50" 
@@ -334,6 +440,155 @@ export default function Timeline() {
             </div>
           )}
 
+        </div>
+      )}
+
+      {/* Event Details Modal */}
+      {selectedEvent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm" onClick={() => setSelectedEvent(null)}>
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 w-full max-w-sm shadow-xl border border-slate-200 dark:border-slate-800" onClick={e => e.stopPropagation()}>
+            <div className="flex items-start justify-between mb-4">
+              <h3 className="text-lg font-bold text-slate-800 dark:text-white">Event Details</h3>
+              <button onClick={() => setSelectedEvent(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="mb-6 space-y-3">
+              <div>
+                <label className="text-xs font-semibold text-slate-500">Subject / Task</label>
+                <p className="text-base font-bold text-slate-800 dark:text-slate-100">{selectedEvent.subject}</p>
+              </div>
+              <div className="flex justify-between">
+                <div>
+                  <label className="text-xs font-semibold text-slate-500">Time</label>
+                  <p className="text-sm text-slate-700 dark:text-slate-300">{selectedEvent.time}</p>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-500">Duration</label>
+                  <p className="text-sm text-slate-700 dark:text-slate-300">{selectedEvent.duration} min</p>
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-500">Status</label>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className={`px-2 py-0.5 rounded text-xs font-bold ${
+                    (selectedEvent.isRepeating ? timelineCompletions[selectedEvent.dateStr]?.includes(selectedEvent.originalIndex) : selectedEvent.completed)
+                      ? "bg-emerald-500/15 text-emerald-600" : "bg-amber-500/15 text-amber-600"
+                  }`}>
+                    {(selectedEvent.isRepeating ? timelineCompletions[selectedEvent.dateStr]?.includes(selectedEvent.originalIndex) : selectedEvent.completed) ? "Completed" : "Pending"}
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={(e) => {
+                  handleEventComplete(e, selectedEvent.dateStr, selectedEvent);
+                  setSelectedEvent(null);
+                }}
+                className="w-full px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                Update Status
+              </button>
+              <button
+                onClick={() => {
+                   navigate("/pomodoro", { state: { duration: selectedEvent.duration, subject: selectedEvent.subject } });
+                }}
+                className="w-full px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm"
+              >
+                <Timer className="w-4 h-4" />
+                Start Pomodoro
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Event Modal */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm" onClick={() => setIsAddModalOpen(false)}>
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 w-full max-w-sm shadow-xl border border-slate-200 dark:border-slate-800" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Add Calendar Event</h3>
+            
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              const fd = new FormData(e.target);
+              
+              // Validate and format time
+              const t = fd.get('time');
+              const d = parseInt(fd.get('duration'), 10);
+              
+              // Calculate end time
+              const match = t.match(/(\d{2}):(\d{2})/);
+              if (!match) return;
+              const dateObj = new Date(`2000-01-01T${t}:00`);
+              dateObj.setMinutes(dateObj.getMinutes() + d);
+              let h = dateObj.getHours();
+              const m = dateObj.getMinutes().toString().padStart(2, '0');
+              const ampm = h >= 12 ? 'PM' : 'AM';
+              h = h % 12 || 12;
+              const endTimeStr = `${h}:${m} ${ampm}`;
+              
+              // start time format
+              let sh = parseInt(match[1], 10);
+              const sm = match[2];
+              const sampm = sh >= 12 ? 'PM' : 'AM';
+              sh = sh % 12 || 12;
+              const startTimeStr = `${sh}:${sm} ${sampm}`;
+
+              const timeStr = `${startTimeStr} - ${endTimeStr}`;
+              
+              const newEvent = {
+                subject: fd.get('subject'),
+                time: timeStr,
+                duration: d,
+                type: fd.get('type') || "Self Study"
+              };
+              
+              try {
+                await addCalendarEvent(fd.get('date'), newEvent);
+                setIsAddModalOpen(false);
+                showToast("Event added!", "success");
+              } catch (err) {
+                console.error(err);
+                showToast("Failed to add event", "error");
+              }
+            }} className="space-y-4">
+              
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1">Date</label>
+                <input required name="date" type="date" defaultValue={format(selectedDate, 'yyyy-MM-dd')} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-brand-500" />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1">Subject / Task</label>
+                <input required name="subject" type="text" placeholder="e.g. Math Exam" className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-brand-500" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Start Time</label>
+                  <input required name="time" type="time" defaultValue="09:00" className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-brand-500" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Duration (min)</label>
+                  <input required name="duration" type="number" min="15" step="15" defaultValue="60" className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-brand-500" />
+                </div>
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2">
+                <button type="button" onClick={() => setIsAddModalOpen(false)} className="px-4 py-2 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                  Cancel
+                </button>
+                <button type="submit" className="px-4 py-2 rounded-xl text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 transition-colors shadow-sm">
+                  Add Event
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>

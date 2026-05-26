@@ -26,7 +26,9 @@ import {
   dbDeleteNote,
   dbLogStudySession,
   dbSaveTimetable,
-  dbToggleTimelineCompletion
+  dbToggleTimelineCompletion,
+  dbAddCalendarEvent,
+  dbToggleCalendarEvent
 } from "../services/db";
 
 // Helper to generate IDs
@@ -45,6 +47,7 @@ export const useStore = create((set, get) => ({
   studySessions: [],
   timetables: [],
   timelineCompletions: {},
+  calendarEvents: {},
   theme: localStorage.getItem("studier_theme") || "dark",
   isMockMode: false,
   streak: 1,
@@ -139,6 +142,7 @@ export const useStore = create((set, get) => ({
       studySessions: [], 
       timetables: [],
       timelineCompletions: {},
+      calendarEvents: {},
       streak: 1,
       productivityScore: 60,
       isAuthLoading: false 
@@ -176,7 +180,8 @@ export const useStore = create((set, get) => ({
           const userData = await createUserProfile(fbUser.uid, fbUser);
           set({ 
             user: userData,
-            timelineCompletions: userData.timelineCompletions || {}
+            timelineCompletions: userData.timelineCompletions || {},
+            calendarEvents: userData.calendarEvents || {}
           });
 
           // 1. Sync Flashcards
@@ -258,6 +263,7 @@ export const useStore = create((set, get) => ({
           studySessions: [], 
           timetables: [], 
           timelineCompletions: {},
+          calendarEvents: {},
           streak: 1, 
           productivityScore: 60, 
           isAuthLoading: false 
@@ -341,6 +347,8 @@ export const useStore = create((set, get) => ({
       question: card.question,
       answer: card.answer,
       subject: card.subject || "General",
+      topic: card.topic || "General",
+      type: card.type || "Concept",
       difficulty: card.difficulty || "Medium",
       efactor: 2.5,
       interval: 1,
@@ -494,6 +502,53 @@ export const useStore = create((set, get) => ({
     } catch (err) {
       // Revert on error
       set({ timelineCompletions });
+      throw err;
+    }
+  },
+
+  // One-off Calendar Events
+  addCalendarEvent: async (dateStr, eventData) => {
+    const { user, calendarEvents } = get();
+    if (!user) return;
+    
+    const newEvent = { ...eventData, id: generateId(), completed: false };
+    const dateEvents = calendarEvents[dateStr] || [];
+    
+    set({
+      calendarEvents: {
+        ...calendarEvents,
+        [dateStr]: [...dateEvents, newEvent]
+      }
+    });
+
+    try {
+      await dbAddCalendarEvent(user.uid, dateStr, newEvent);
+    } catch (err) {
+      set({ calendarEvents });
+      throw err;
+    }
+  },
+
+  toggleCalendarEvent: async (dateStr, eventId) => {
+    const { user, calendarEvents } = get();
+    if (!user) return;
+    
+    const dateEvents = calendarEvents[dateStr] || [];
+    const updatedEvents = dateEvents.map(ev => 
+      ev.id === eventId ? { ...ev, completed: !ev.completed } : ev
+    );
+    
+    set({
+      calendarEvents: {
+        ...calendarEvents,
+        [dateStr]: updatedEvents
+      }
+    });
+
+    try {
+      await dbToggleCalendarEvent(user.uid, dateStr, eventId);
+    } catch (err) {
+      set({ calendarEvents });
       throw err;
     }
   }

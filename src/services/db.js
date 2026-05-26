@@ -209,3 +209,40 @@ export async function dbToggleTimelineCompletion(userId, dateStr, slotIndex) {
     });
   }
 }
+
+/**
+ * Calendar Events Services (One-off specific date events)
+ */
+export async function dbAddCalendarEvent(userId, dateStr, event) {
+  const userRef = doc(db, "users", userId);
+  const snap = await getDoc(userRef);
+  
+  if (snap.exists()) {
+    const data = snap.data();
+    const eventsMap = data.calendarEvents || {};
+    const dateEvents = eventsMap[dateStr] || [];
+    
+    await updateDoc(userRef, {
+      [`calendarEvents.${dateStr}`]: [...dateEvents, event]
+    });
+  }
+}
+
+export async function dbToggleCalendarEvent(userId, dateStr, eventId) {
+  const userRef = doc(db, "users", userId);
+  const snap = await getDoc(userRef);
+  
+  if (snap.exists()) {
+    const data = snap.data();
+    const eventsMap = data.calendarEvents || {};
+    const dateEvents = eventsMap[dateStr] || [];
+    
+    const updatedEvents = dateEvents.map(ev => 
+      ev.id === eventId ? { ...ev, completed: !ev.completed } : ev
+    );
+    
+    await updateDoc(userRef, {
+      [`calendarEvents.${dateStr}`]: updatedEvents
+    });
+  }
+}

@@ -4,7 +4,7 @@ import { useToast } from "../context/ToastContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   BookOpen, Star, Plus, Trash2, Search, Sparkles, 
-  ArrowRight, ArrowLeft, RefreshCcw, Check, BrainCircuit, Edit2
+  ArrowRight, ArrowLeft, RefreshCcw, Check, BrainCircuit, Edit2, Play
 } from "lucide-react";
 
 export default function Flashcards() {
@@ -38,6 +38,7 @@ export default function Flashcards() {
 
   // Study Mode State
   const [isStudyMode, setIsStudyMode] = useState(false);
+  const [studySessionCards, setStudySessionCards] = useState([]);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
 
@@ -131,7 +132,7 @@ export default function Flashcards() {
 
   // 6. Handle Spaced Repetition Grading
   const handleGradeCard = async (rating) => {
-    const card = filteredCards[currentCardIndex];
+    const card = studySessionCards[currentCardIndex];
     if (!card) return;
 
     try {
@@ -141,7 +142,7 @@ export default function Flashcards() {
       // Advance to next card or exit study mode
       setIsFlipped(false);
       setTimeout(() => {
-        if (currentCardIndex < filteredCards.length - 1) {
+        if (currentCardIndex < studySessionCards.length - 1) {
           setCurrentCardIndex(prev => prev + 1);
         } else {
           showToast("Study session complete! Excellent work.", "success");
@@ -155,17 +156,18 @@ export default function Flashcards() {
   };
 
   // Start study session
-  const startStudySession = () => {
-    if (filteredCards.length === 0) {
-      showToast("No flashcards found for study filters", "warning");
+  const startStudySession = (cardsToStudy) => {
+    if (cardsToStudy.length === 0) {
+      showToast("No flashcards found for study", "warning");
       return;
     }
+    setStudySessionCards(cardsToStudy);
     setCurrentCardIndex(0);
     setIsFlipped(false);
     setIsStudyMode(true);
   };
 
-  const currentCard = filteredCards[currentCardIndex];
+  const currentCard = studySessionCards[currentCardIndex];
 
   return (
     <div className="space-y-6">
@@ -202,7 +204,7 @@ export default function Flashcards() {
               <ArrowLeft className="w-4 h-4" /> Exit Session
             </button>
             <span className="font-bold text-slate-600 dark:text-slate-400">
-              Card {currentCardIndex + 1} of {filteredCards.length}
+              Card {currentCardIndex + 1} of {studySessionCards.length}
             </span>
           </div>
 
@@ -228,9 +230,11 @@ export default function Flashcards() {
                     <code>{currentCard?.question}</code>
                   </pre>
                   ) : (
-                    <div className="font-bold text-lg sm:text-xl text-slate-800 dark:text-slate-200">
-                      {currentCard?.question}
-                    </div>
+                    currentCard?.question && (
+                      <div className="font-bold text-lg sm:text-xl text-slate-800 dark:text-slate-200">
+                        {currentCard?.question}
+                      </div>
+                    )
                   )}
                 </div>
                 <span className="text-xs text-slate-400 dark:text-slate-500 text-center flex items-center justify-center gap-1">
@@ -249,9 +253,11 @@ export default function Flashcards() {
                     <code>{currentCard?.answer}</code>
                   </pre>
                   ) : (
-                    <div className="text-slate-750 dark:text-slate-300 leading-relaxed font-medium">
-                      {currentCard?.answer}
-                    </div>
+                    currentCard?.answer && (
+                      <div className="text-slate-750 dark:text-slate-300 leading-relaxed font-medium">
+                        {currentCard?.answer}
+                      </div>
+                    )
                   )}
                 </div>
                 <span className="text-xs text-slate-400 dark:text-slate-500 text-center">
@@ -340,7 +346,7 @@ export default function Flashcards() {
 
             {/* Action study button */}
             <button 
-              onClick={startStudySession}
+              onClick={() => startStudySession(filteredCards)}
               disabled={filteredCards.length === 0}
               className="w-full flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 rounded-xl transition-all shadow-md disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
             >
@@ -357,8 +363,15 @@ export default function Flashcards() {
                   {/* Topic Group Header */}
                   <div className="flex items-center gap-2 border-b border-slate-200/50 dark:border-slate-800/40 pb-2">
                     <span className="w-2.5 h-2.5 rounded bg-brand-500" />
-                    <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide">
+                    <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide flex items-center gap-2">
                       Topic: {topic} ({cards.length} cards)
+                      <button 
+                        onClick={() => startStudySession(cards)}
+                        className="p-1 rounded-full bg-brand-500/10 text-brand-600 hover:bg-brand-500/20 transition-colors"
+                        title="Study this topic"
+                      >
+                        <Play className="w-3 h-3 fill-current" />
+                      </button>
                     </h3>
                   </div>
 

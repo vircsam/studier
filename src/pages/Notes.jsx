@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useFirestore } from "../hooks/useFirestore";
 import { useToast } from "../context/ToastContext";
+import { useStore } from "../store/useStore";
 import { 
   FileText, Search, Plus, Trash2, Tag, BookOpen, 
   Save, Eye, Edit3, ArrowLeft
@@ -9,6 +10,7 @@ import {
 export default function Notes() {
   const { notes, addNote, updateNote, deleteNote } = useFirestore();
   const { showToast } = useToast();
+  const user = useStore(state => state.user);
 
   const [activeNoteId, setActiveNoteId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -62,6 +64,37 @@ export default function Notes() {
       return matchesSearch && matchesSubject;
     });
   }, [notes, searchQuery, selectedSubject]);
+
+  // Group filtered notes by subject (OneNote style)
+  const groupedNotes = useMemo(() => {
+    const groups = {};
+    filteredNotes.forEach(note => {
+      const subject = note.subject || "General";
+      if (!groups[subject]) groups[subject] = [];
+      groups[subject].push(note);
+    });
+    return groups;
+  }, [filteredNotes]);
+
+  // Helper for tag colors
+  const getTagColor = (tag) => {
+    const colors = [
+      "bg-red-500/10 text-red-500 border-red-500/20",
+      "bg-blue-500/10 text-blue-500 border-blue-500/20",
+      "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+      "bg-amber-500/10 text-amber-500 border-amber-500/20",
+      "bg-purple-500/10 text-purple-500 border-purple-500/20",
+      "bg-pink-500/10 text-pink-500 border-pink-500/20",
+      "bg-indigo-500/10 text-indigo-500 border-indigo-500/20",
+      "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
+    ];
+    let hash = 0;
+    for (let i = 0; i < tag.length; i++) {
+      hash = tag.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % colors.length;
+    return colors[index];
+  };
 
   // Select first note on load if available
   useEffect(() => {
@@ -245,46 +278,71 @@ export default function Notes() {
             </select>
           </div>
 
-          {/* Notes items list */}
-          <div className="flex-1 overflow-y-auto space-y-2 pr-1 pt-2">
-            {filteredNotes.map((note) => (
-              <div
-                key={note.id}
-                onClick={() => {
-                  setActiveNoteId(note.id);
-                  setMobileActive(true);
-                }}
-                className={`p-3.5 rounded-2xl cursor-pointer border text-left space-y-1.5 transition-all ${
-                  activeNoteId === note.id
-                    ? "bg-brand-500/10 border-brand-500/30"
-                    : "bg-transparent border-transparent hover:bg-slate-100 dark:hover:bg-slate-900/40"
-                }`}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <span className="font-bold text-sm text-slate-800 dark:text-slate-200 line-clamp-1">
-                    {note.title || "Untitled Note"}
-                  </span>
-                  <button
-                    onClick={(e) => handleDeleteNote(note.id, e)}
-                    className="p-1 rounded text-slate-400 hover:text-rose-500 transition-colors flex-shrink-0"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+          {/* Notes items list (Grouped by Subject) */}
+          <div className="flex-1 overflow-y-auto space-y-4 pr-1 pt-2">
+            {Object.keys(groupedNotes).length > 0 ? (
+              Object.entries(groupedNotes).map(([subject, notesList]) => (
+                <div key={subject} className="space-y-2">
+                  <div className="flex items-center gap-2 border-b border-slate-200/50 dark:border-slate-800/40 pb-1">
+                    <BookOpen className="w-3.5 h-3.5 text-slate-400" />
+                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+                      {subject}
+                    </h4>
+                  </div>
+                  {notesList.map((note) => (
+                    <div
+                      key={note.id}
+                      onClick={() => {
+                        setActiveNoteId(note.id);
+                        setMobileActive(true);
+                      }}
+                      className={`p-3.5 rounded-2xl cursor-pointer border text-left space-y-1.5 transition-all ${
+                        activeNoteId === note.id
+                          ? "bg-brand-500/10 border-brand-500/30 shadow-sm"
+                          : "bg-transparent border-transparent hover:bg-slate-100 dark:hover:bg-slate-900/40"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="font-bold text-sm text-slate-800 dark:text-slate-200 line-clamp-1">
+                          {note.title || "Untitled Note"}
+                        </span>
+                        <button
+                          onClick={(e) => handleDeleteNote(note.id, e)}
+                          className="p-1 rounded text-slate-400 hover:text-rose-500 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors flex-shrink-0"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 line-clamp-2 leading-relaxed">
+                        {note.content?.replace(/[#*`>_\-!\[\]\(\)]/g, "")}
+                      </p>
+                      
+                      {/* Tags */}
+                      {note.tags && note.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {note.tags.slice(0, 3).map((tag, idx) => (
+                            <span key={idx} className={`px-1.5 py-0.5 rounded text-[8px] font-bold border ${getTagColor(tag)}`}>
+                              {tag}
+                            </span>
+                          ))}
+                          {note.tags.length > 3 && (
+                            <span className="px-1.5 py-0.5 rounded text-[8px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800">
+                              +{note.tags.length - 3}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center justify-between text-[9px] text-slate-400 pt-1 font-semibold">
+                        <span>
+                          {new Date(note.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <p className="text-xs text-slate-400 dark:text-slate-500 line-clamp-2 leading-relaxed">
-                  {note.content?.replace(/[#*`>_\-]/g, "")}
-                </p>
-                <div className="flex items-center justify-between text-[9px] text-slate-400 pt-1 font-semibold">
-                  <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-500 uppercase tracking-wider">
-                    {note.subject || "General"}
-                  </span>
-                  <span>
-                    {new Date(note.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                  </span>
-                </div>
-              </div>
-            ))}
-            {filteredNotes.length === 0 && (
+              ))
+            ) : (
               <p className="text-center text-xs text-slate-400 py-12">No drafts found</p>
             )}
           </div>
@@ -336,12 +394,14 @@ export default function Notes() {
                   <button
                     onClick={() => setEditMode("edit")}
                     className={`p-1.5 hover:bg-slate-100 dark:hover:bg-slate-900 ${editMode === "edit" ? "text-brand-500" : ""}`}
+                    title="Edit"
                   >
                     <Edit3 className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => setEditMode("preview")}
                     className={`p-1.5 hover:bg-slate-100 dark:hover:bg-slate-900 ${editMode === "preview" ? "text-brand-500" : ""}`}
+                    title="Preview"
                   >
                     <Eye className="w-4 h-4" />
                   </button>
@@ -380,10 +440,10 @@ export default function Notes() {
                   {editorTags.map((t, idx) => (
                     <span 
                       key={idx} 
-                      className="bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-md flex items-center gap-1 text-[10px] font-semibold border border-slate-250/20"
+                      className={`px-2 py-0.5 rounded-md flex items-center gap-1 text-[10px] font-semibold border ${getTagColor(t)}`}
                     >
                       {t}
-                      <button type="button" onClick={() => handleRemoveTag(t)} className="text-rose-500 font-bold hover:scale-110">×</button>
+                      <button type="button" onClick={() => handleRemoveTag(t)} className="text-current font-bold hover:scale-110">×</button>
                     </span>
                   ))}
                   <form onSubmit={handleAddTag} className="inline-block">

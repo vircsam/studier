@@ -2,15 +2,18 @@ import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useFirestore } from "../hooks/useFirestore";
 import { useToast } from "../context/ToastContext";
+import { useStore } from "../store/useStore";
 import { 
   Calendar, Plus, Trash2, Clock, Sparkles, AlertTriangle, 
   CalendarDays, CheckCircle2, ChevronRight, HelpCircle, Edit2 
 } from "lucide-react";
+import { format } from "../utils/calendar";
 
 export default function Timetable() {
   const navigate = useNavigate();
   const { timetables, saveTimetable } = useFirestore();
   const { showToast } = useToast();
+  const { calendarEvents, toggleCalendarEvent } = useStore();
 
   // Subjects input state
   const [subjects, setSubjects] = useState([
@@ -29,7 +32,8 @@ export default function Timetable() {
 
   // Daily hours state
   const [dailyHours, setDailyHours] = useState(4);
-  const [selectedGenerateDay, setSelectedGenerateDay] = useState("All Days");
+  const [selectedGenerateDay, setSelectedGenerateDay] = useState("Today Only");
+  const [specificDate, setSpecificDate] = useState(new Date().toISOString().split("T")[0]);
   const [generating, setGenerating] = useState(false);
 
   // Active day view for output (defaults dynamically to today's day of the week)
@@ -80,10 +84,83 @@ export default function Timetable() {
   // Sort schedule in rolling order starting from today
   const sortedSchedule = useMemo(() => {
     if (!activeTimetable || !activeTimetable.schedule) return [];
-    return [...activeTimetable.schedule].sort((a, b) => {
-      return rollingDaysOrder.indexOf(a.day) - rollingDaysOrder.indexOf(b.day);
+    
+    const filtered = activeTimetable.schedule.filter(d => {
+       const isGenericDay = rollingDaysOrder.includes(d.day);
+       if (isGenericDay && (!d.slots || d.slots.length === 0)) return false;
+       return true;
+    });
+
+    return filtered.sort((a, b) => {
+      const idxA = rollingDaysOrder.indexOf(a.day);
+      const idxB = rollingDaysOrder.indexOf(b.day);
+      if (idxA === -1 && idxB === -1) return new Date(a.day) - new Date(b.day);
+      if (idxA === -1) return -1;
+      if (idxB === -1) return 1;
+      return idxA - idxB;
     });
   }, [activeTimetable, rollingDaysOrder]);
+
+  const displaySlots = useMemo(() => {
+    if (!activeTimetable?.schedule) return [];
+    
+    let templateSlots = activeTimetable.schedule.find(d => d.day === activeDayTab)?.slots || [];
+    templateSlots = templateSlots.map((s, i) => ({ ...s, originalIdx: i, isOneOff: false }));
+    
+    let targetDateStr = null;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(activeDayTab)) {
+      targetDateStr = activeDayTab;
+    } else {
+      const current = new Date();
+      const DAYS_OF_WEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      for (let i = 0; i < 7; i++) {
+        const dayDate = new Date(current);
+        dayDate.setDate(current.getDate() + i);
+        if (DAYS_OF_WEEK[dayDate.getDay()] === activeDayTab) {
+           targetDateStr = format(dayDate, 'yyyy-MM-dd');
+           break;
+        }
+      }
+    }
+    
+    let oneOffs = [];
+    if (targetDateStr && calendarEvents && calendarEvents[targetDateStr]) {
+      oneOffs = calendarEvents[targetDateStr].map(s => ({ ...s, isOneOff: true, targetDateStr }));
+    }
+    
+    const combined = [...templateSlots, ...oneOffs];
+    
+    combined.sort((a, b) => {
+      const parseTime = (timeStr) => {
+         if (!timeStr) return 0;
+         const [h, m] = timeStr.split('-');
+         const [hh, mm] = (h || "00:00").split(':');
+         return parseInt(hh)*60 + parseInt(mm || "0");
+      };
+      return parseTime(a.time) - parseTime(b.time);
+    });
+    
+    return combined;
+  }, [activeTimetable, activeDayTab, calendarEvents]);
+
+  // Ensure activeDayTab is valid for the current schedule
+  useEffect(() => {
+    if (sortedSchedule.length > 0) {
+      const tabExists = sortedSchedule.some(d => d.day === activeDayTab);
+      if (!tabExists) {
+        const todayStr = format(new Date(), 'yyyy-MM-dd');
+        const DAYS_OF_WEEK = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        const todayName = DAYS_OF_WEEK[new Date().getDay()];
+        
+        const matchingTab = sortedSchedule.find(d => d.day === todayStr || d.day === todayName);
+        if (matchingTab) {
+          setActiveDayTab(matchingTab.day);
+        } else {
+          setActiveDayTab(sortedSchedule[0].day);
+        }
+      }
+    }
+  }, [sortedSchedule, activeDayTab]);
 
   // Sync inputs with active timetable when loaded
   useEffect(() => {
@@ -423,6 +500,12 @@ export default function Timetable() {
 
     setGenerating(true);
     try {
+      const targetDayVal = selectedGenerateDay === "Today Only" 
+        ? new Date().toISOString().split("T")[0] 
+        : selectedGenerateDay === "Specific Date"
+          ? specificDate
+          : selectedGenerateDay;
+
       const response = await fetch("/api/timetable", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -430,7 +513,7 @@ export default function Timetable() {
           subjects,
           examDates,
           dailyHours,
-          targetDay: selectedGenerateDay
+          targetDay: targetDayVal
         })
       });
       const data = await response.json();
@@ -442,19 +525,17 @@ export default function Timetable() {
         if (selectedGenerateDay && selectedGenerateDay !== "All Days") {
           // If we have an active timetable, merge with it
           if (activeTimetable && activeTimetable.schedule) {
-            updatedSchedule = activeTimetable.schedule.map(dayObj => {
-              const newDayData = data.schedule.find(d => d.day === dayObj.day);
-              if (newDayData) {
-                return newDayData;
-              }
-              return dayObj;
-            });
+            updatedSchedule = activeTimetable.schedule.filter(d => d.day !== targetDayVal);
+            updatedSchedule.push(data.schedule.find(d => d.day === targetDayVal) || data.schedule[0]);
           } else {
             // Otherwise create a weekly structure where only targetDay is populated, others are empty
             updatedSchedule = DAYS.map(dayName => {
-              const newDayData = data.schedule.find(d => d.day === dayName);
-              return newDayData || { day: dayName, slots: [] };
+              if (dayName === targetDayVal) return data.schedule[0];
+              return { day: dayName, slots: [] };
             });
+            if (selectedGenerateDay === "Today Only" || selectedGenerateDay === "Specific Date") {
+              updatedSchedule.unshift(data.schedule[0]);
+            }
           }
         } else {
           // "All Days" generates the full schedule
@@ -471,7 +552,7 @@ export default function Timetable() {
         });
         showToast(`Study timetable generated successfully for ${selectedGenerateDay}!`, "success");
         if (selectedGenerateDay && selectedGenerateDay !== "All Days") {
-          setActiveDayTab(selectedGenerateDay);
+          setActiveDayTab(targetDayVal);
         } else if (updatedSchedule.length > 0) {
           setActiveDayTab(updatedSchedule[0].day);
         }
@@ -614,34 +695,10 @@ export default function Timetable() {
             </div>
           </div>
 
-          {/* Exam Dates scheduler */}
-          <div className="glass-panel p-6 rounded-3xl space-y-4">
-            <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 text-sm border-b border-slate-200/50 dark:border-slate-800/40 pb-3">
-              2. Exam Deadlines (Optional)
-            </h3>
-            {subjects.length > 0 ? (
-              <div className="space-y-3 max-h-48 overflow-y-auto pr-1">
-                {subjects.map((sub, i) => (
-                  <div key={i} className="space-y-1">
-                    <label className="text-[10px] font-semibold text-slate-400 block">{sub.name}</label>
-                    <input
-                      type="date"
-                      value={examDates[sub.name] || ""}
-                      onChange={(e) => handleExamDateChange(sub.name, e.target.value)}
-                      className="w-full bg-slate-100/50 dark:bg-slate-950/40 border border-slate-200/50 dark:border-slate-800/40 rounded-xl px-3 py-1.5 text-xs outline-none focus:border-brand-500 cursor-pointer"
-                    />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-center text-xs text-slate-400 py-4">Add study subjects first</p>
-            )}
-          </div>
-
           {/* Target Hours Select */}
           <div className="glass-panel p-6 rounded-3xl space-y-4">
             <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 text-sm border-b border-slate-200/50 dark:border-slate-800/40 pb-3">
-              3. Study Hours & Day Option
+              2. Study Hours & Day Option
             </h3>
             <div className="space-y-4">
               <div className="space-y-3">
@@ -668,39 +725,75 @@ export default function Timetable() {
               <div className="space-y-2 pt-3.5 border-t border-slate-200/40 dark:border-slate-800/40">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-semibold text-slate-500">Generate for:</label>
-                  <span className="text-xs font-bold text-brand-600 dark:text-brand-400">{selectedGenerateDay}</span>
+                  <span className="text-xs font-bold text-brand-600 dark:text-brand-400">
+                    {selectedGenerateDay === "Specific Date" ? specificDate : selectedGenerateDay}
+                  </span>
                 </div>
                 <select
                   value={selectedGenerateDay}
                   onChange={(e) => setSelectedGenerateDay(e.target.value)}
                   className="w-full bg-slate-100/50 dark:bg-slate-950/40 border border-slate-200/50 dark:border-slate-800/40 rounded-xl px-3 py-2 text-xs outline-none focus:border-brand-500 cursor-pointer font-medium dark:text-slate-200"
                 >
+                  <option value="Today Only" className="dark:bg-slate-900">Today Only</option>
+                  <option value="Specific Date" className="dark:bg-slate-900">Specific Date...</option>
                   <option value="All Days" className="dark:bg-slate-900">All Days (Full Week)</option>
                   {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map(day => (
                     <option key={day} value={day} className="dark:bg-slate-900">{day}</option>
                   ))}
                 </select>
+                {selectedGenerateDay === "Specific Date" && (
+                  <input
+                    type="date"
+                    value={specificDate}
+                    onChange={(e) => setSpecificDate(e.target.value)}
+                    className="w-full mt-2 bg-slate-100/50 dark:bg-slate-950/40 border border-slate-200/50 dark:border-slate-800/40 rounded-xl px-3 py-2 text-xs outline-none focus:border-brand-500 cursor-pointer"
+                  />
+                )}
               </div>
             </div>
-
-            <button
-              onClick={handleGenerateTimetable}
-              disabled={generating || subjects.length === 0}
-              className="w-full flex items-center justify-center gap-2 mt-4 py-3 text-sm font-bold text-white bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 rounded-xl transition-all shadow-md disabled:opacity-50"
-            >
-              {generating ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Computing weights...</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4" />
-                  <span>Generate Schedule</span>
-                </>
-              )}
-            </button>
           </div>
+
+          {/* Exam Dates scheduler */}
+          <div className="glass-panel p-6 rounded-3xl space-y-4">
+            <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 text-sm border-b border-slate-200/50 dark:border-slate-800/40 pb-3">
+              3. Exam Deadlines (Optional)
+            </h3>
+            {subjects.length > 0 ? (
+              <div className="space-y-3 max-h-48 overflow-y-auto pr-1">
+                {subjects.map((sub, i) => (
+                  <div key={i} className="space-y-1">
+                    <label className="text-[10px] font-semibold text-slate-400 block">{sub.name}</label>
+                    <input
+                      type="date"
+                      value={examDates[sub.name] || ""}
+                      onChange={(e) => handleExamDateChange(sub.name, e.target.value)}
+                      className="w-full bg-slate-100/50 dark:bg-slate-950/40 border border-slate-200/50 dark:border-slate-800/40 rounded-xl px-3 py-1.5 text-xs outline-none focus:border-brand-500 cursor-pointer"
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-xs text-slate-400 py-4">Add study subjects first</p>
+            )}
+          </div>
+
+          <button
+            onClick={handleGenerateTimetable}
+            disabled={generating || subjects.length === 0}
+            className="w-full flex items-center justify-center gap-2 py-3 text-sm font-bold text-white bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 rounded-xl transition-all shadow-md disabled:opacity-50"
+          >
+            {generating ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Computing weights...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4" />
+                <span>Generate Schedule</span>
+              </>
+            )}
+          </button>
         </div>
 
         {/* Right Side: Generated Routine Output view */}
@@ -744,33 +837,44 @@ export default function Timetable() {
 
                 {/* Day tabs row */}
                 <div className="flex gap-1.5 overflow-x-auto py-4 scrollbar-none">
-                  {sortedSchedule?.map((dayObj, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setActiveDayTab(dayObj.day)}
-                      className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex flex-col items-center cursor-pointer ${
-                        activeDayTab === dayObj.day
-                          ? "bg-brand-500 text-white shadow-md shadow-brand-500/20"
-                          : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-900/60 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-400"
-                      }`}
-                    >
-                      <span className="leading-tight">{dayObj.day}</span>
-                      {weekDates[dayObj.day] && (
-                        <span className={`text-[10px] font-semibold mt-0.5 leading-none ${
-                          activeDayTab === dayObj.day ? "text-brand-100/90" : "text-slate-400 dark:text-slate-500"
-                        }`}>
-                          {weekDates[dayObj.day]}
-                        </span>
-                      )}
-                    </button>
-                  ))}
+                  {sortedSchedule?.map((dayObj, i) => {
+                    const isSpecificDate = /^\d{4}-\d{2}-\d{2}$/.test(dayObj.day);
+                    let topText = dayObj.day;
+                    let bottomText = weekDates[dayObj.day];
+                    
+                    if (isSpecificDate) {
+                       const [yyyy, mm, dd] = dayObj.day.split('-');
+                       const localDate = new Date(yyyy, mm - 1, dd);
+                       topText = localDate.toLocaleDateString('en-US', { weekday: 'long' });
+                       bottomText = localDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    }
+
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => setActiveDayTab(dayObj.day)}
+                        className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex flex-col items-center cursor-pointer ${
+                          activeDayTab === dayObj.day
+                            ? "bg-brand-500 text-white shadow-md shadow-brand-500/20"
+                            : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-900/60 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-400"
+                        }`}
+                      >
+                        <span className="leading-tight">{topText}</span>
+                        {bottomText && (
+                          <span className={`text-[10px] font-semibold mt-0.5 leading-none ${
+                            activeDayTab === dayObj.day ? "text-brand-100/90" : "text-slate-400 dark:text-slate-500"
+                          }`}>
+                            {bottomText}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {/* Slots view list */}
                 <div className="space-y-3 mt-2 pr-1 max-h-[350px] overflow-y-auto">
-                  {activeTimetable.schedule
-                    ?.find(d => d.day === activeDayTab)
-                    ?.slots.map((slot, idx) => {
+                  {displaySlots.map((slot, idx) => {
                       const isBreak = slot.subject === "Break";
                       return (
                         <div 
@@ -793,7 +897,11 @@ export default function Timetable() {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleToggleCompleteSlot(activeDayTab, idx);
+                                  if (slot.isOneOff) {
+                                    toggleCalendarEvent(slot.targetDateStr, slot.id);
+                                  } else {
+                                    handleToggleCompleteSlot(activeDayTab, slot.originalIdx);
+                                  }
                                 }}
                                 className={`p-1 rounded-lg transition-colors cursor-pointer flex-shrink-0 ${
                                   slot.completed 
@@ -843,14 +951,18 @@ export default function Timetable() {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setEditingSlot({
-                                    day: activeDayTab,
-                                    index: idx,
-                                    subject: slot.subject,
-                                    type: slot.type,
-                                    duration: slot.duration,
-                                    time: slot.time
-                                  });
+                                  if (slot.isOneOff) {
+                                    showToast("Edit timeline events from the Timeline page.", "warning");
+                                  } else {
+                                    setEditingSlot({
+                                      day: activeDayTab,
+                                      index: slot.originalIdx,
+                                      subject: slot.subject,
+                                      type: slot.type,
+                                      duration: slot.duration,
+                                      time: slot.time
+                                    });
+                                  }
                                 }}
                                 className="p-1 rounded text-slate-400 hover:text-brand-500 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors cursor-pointer"
                                 title="Edit Slot"
@@ -860,7 +972,11 @@ export default function Timetable() {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleDeleteSlot(activeDayTab, idx);
+                                  if (slot.isOneOff) {
+                                    showToast("Delete timeline events from the Timeline page.", "warning");
+                                  } else {
+                                    handleRemoveSlot(activeDayTab, slot.originalIdx);
+                                  }
                                 }}
                                 className="p-1 rounded text-slate-400 hover:text-rose-500 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors cursor-pointer"
                                 title="Delete Slot"

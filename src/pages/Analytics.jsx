@@ -14,64 +14,31 @@ export default function Analytics() {
   const { studySessions, flashcards, streak, productivityScore } = useFirestore();
   const { showToast } = useToast();
 
-  const [loading, setLoading] = useState(true);
-  const [metrics, setMetrics] = useState({
-    totalHours: 0.0,
-    totalFocusMinutes: 0,
-    masteryRate: 0,
-    totalFlashcards: 0,
-    masteredFlashcards: 0,
-    starredFlashcards: 0,
-    streak: 0,
-    productivityScore: 0
-  });
-  
-  const [subjectData, setSubjectData] = useState([]);
-  const [dailyChartData, setDailyChartData] = useState([]);
-  const [insights, setInsights] = useState([]);
+  const { studySessions, flashcards, streak, productivityScore } = useFirestore();
 
-  // Fetch compiled analytics from backend API
-  useEffect(() => {
-    const fetchAnalytics = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch("/api/analytics", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            sessions: studySessions,
-            flashcards: flashcards
-          })
-        });
-        const data = await response.json();
-        
-        if (data.success) {
-          setMetrics(data.metrics);
-          setSubjectData(data.subjectDistribution || []);
-          setDailyChartData(data.dailyChartData || []);
-          setInsights(data.insights || []);
-        } else {
-          throw new Error("Failed to load backend calculations");
-        }
-      } catch (err) {
-        console.warn("Analytics API failed, fallback to client calculations:", err);
-        // Fallback calculations on client
-        computeLocalAnalytics();
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAnalytics();
-  }, [studySessions, flashcards]);
-
-  const computeLocalAnalytics = () => {
+  const metrics = useMemo(() => {
     const totalFocusMinutes = studySessions
       .filter(s => s.type === "focus" || !s.type)
       .reduce((sum, s) => sum + (Number(s.durationMinutes) || 0), 0);
 
     const totalHours = Number((totalFocusMinutes / 60).toFixed(1));
 
+    const totalFC = flashcards.length;
+    const masteredFC = flashcards.filter(f => f.isMastered).length;
+    const masteryRate = totalFC > 0 ? Math.round((masteredFC / totalFC) * 100) : 0;
+
+    return {
+      totalHours,
+      totalFocusMinutes,
+      masteryRate,
+      totalFlashcards: totalFC,
+      masteredFlashcards: masteredFC,
+      streak: streak,
+      productivityScore: productivityScore
+    };
+  }, [studySessions, flashcards, streak, productivityScore]);
+
+  const subjectData = useMemo(() => {
     const subjectMinutes = {};
     studySessions.forEach(s => {
       if (s.type === "focus" || !s.type) {
@@ -80,17 +47,13 @@ export default function Analytics() {
       }
     });
 
-    const subDist = Object.keys(subjectMinutes).map(subject => ({
+    return Object.keys(subjectMinutes).map(subject => ({
       subject,
       hours: Number((subjectMinutes[subject] / 60).toFixed(1))
     }));
+  }, [studySessions]);
 
-    const totalFC = flashcards.length;
-    const masteredFC = flashcards.filter(f => f.isMastered).length;
-    const starredFC = flashcards.filter(f => f.isStarred).length;
-    const masteryRate = totalFC > 0 ? Math.round((masteredFC / totalFC) * 100) : 0;
-
-    // Generate daily chart last 7 days
+  const dailyChartData = useMemo(() => {
     const dailyStudy = {};
     for (let i = 6; i >= 0; i--) {
       const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
@@ -102,7 +65,7 @@ export default function Analytics() {
       }
     });
 
-    const dailyData = Object.keys(dailyStudy).map(date => {
+    return Object.keys(dailyStudy).map(date => {
       const dObj = new Date(date + "T00:00:00");
       const label = dObj.toLocaleDateString("en-US", { month: "short", day: "numeric" });
       return {
@@ -111,24 +74,25 @@ export default function Analytics() {
         hours: Number((dailyStudy[date] / 60).toFixed(1))
       };
     });
+  }, [studySessions]);
 
-    setMetrics({
-      totalHours,
-      totalFocusMinutes,
-      masteryRate,
-      totalFlashcards: totalFC,
-      masteredFlashcards: masteredFC,
-      starredFlashcards: starredFC,
-      streak: streak,
-      productivityScore: productivityScore
-    });
-    setSubjectData(subDist);
-    setDailyChartData(dailyData);
-    setInsights([
-      "You are studying in local client analytics fallback mode.",
-      "Track your flashcard performance by rating them easy or hard in cards view."
-    ]);
-  };
+  const insights = useMemo(() => {
+    const hints = [];
+    if (metrics.totalHours < 2) {
+      hints.push("Try completing a 25-minute Pomodoro study block today to build momentum!");
+    } else {
+      hints.push("Great job! You have logged consistent study hours.");
+    }
+    
+    if (metrics.masteryRate < 50) {
+      hints.push("Tip: Review cards marked 'Hard' daily to move them into long-term memory.");
+    } else {
+      hints.push("Excellent retention! You've mastered a large portion of your flashcards.");
+    }
+    return hints;
+  }, [metrics]);
+
+
 
   // Color options for Pie Charts
   const COLORS = ["#8b5cf6", "#3b82f6", "#06b6d4", "#ec4899", "#f59e0b"];
@@ -146,13 +110,7 @@ export default function Analytics() {
         </p>
       </div>
 
-      {loading ? (
-        <div className="h-64 flex flex-col items-center justify-center text-slate-400">
-          <div className="w-10 h-10 border-4 border-brand-500/20 border-t-brand-500 rounded-full animate-spin mb-3" />
-          <p className="text-xs font-semibold">Compiling analytics reports...</p>
-        </div>
-      ) : (
-        <>
+      <>
           {/* Top Metrics Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             
@@ -326,7 +284,6 @@ export default function Analytics() {
             </div>
           </div>
         </>
-      )}
     </div>
   );
 }
