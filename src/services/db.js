@@ -184,3 +184,28 @@ export async function dbSaveTimetable(timetable) {
   await setDoc(doc(db, "timetables", docId), sanitizeForFirestore(timetableData));
   return timetableData;
 }
+
+/**
+ * Timeline Completions Services
+ */
+export async function dbToggleTimelineCompletion(userId, dateStr, slotIndex) {
+  const userRef = doc(db, "users", userId);
+  const snap = await getDoc(userRef);
+  
+  if (snap.exists()) {
+    const data = snap.data();
+    const completions = data.timelineCompletions || {};
+    const dateCompletions = completions[dateStr] || [];
+    
+    let newIndices;
+    if (dateCompletions.includes(slotIndex)) {
+      newIndices = dateCompletions.filter(i => i !== slotIndex);
+    } else {
+      newIndices = [...dateCompletions, slotIndex];
+    }
+    
+    await updateDoc(userRef, { 
+      [`timelineCompletions.${dateStr}`]: newIndices 
+    });
+  }
+}

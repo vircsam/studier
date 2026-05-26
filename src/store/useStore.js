@@ -25,7 +25,8 @@ import {
   dbUpdateNote,
   dbDeleteNote,
   dbLogStudySession,
-  dbSaveTimetable
+  dbSaveTimetable,
+  dbToggleTimelineCompletion
 } from "../services/db";
 
 // Helper to generate IDs
@@ -43,6 +44,7 @@ export const useStore = create((set, get) => ({
   notes: [],
   studySessions: [],
   timetables: [],
+  timelineCompletions: {},
   theme: localStorage.getItem("studier_theme") || "dark",
   isMockMode: false,
   streak: 1,
@@ -136,6 +138,7 @@ export const useStore = create((set, get) => ({
       notes: [], 
       studySessions: [], 
       timetables: [],
+      timelineCompletions: {},
       streak: 1,
       productivityScore: 60,
       isAuthLoading: false 
@@ -171,7 +174,10 @@ export const useStore = create((set, get) => ({
         try {
           // Initialize/update user profile doc
           const userData = await createUserProfile(fbUser.uid, fbUser);
-          set({ user: userData });
+          set({ 
+            user: userData,
+            timelineCompletions: userData.timelineCompletions || {}
+          });
 
           // 1. Sync Flashcards
           const fcQuery = query(collection(db, "flashcards"), where("userId", "==", fbUser.uid));
@@ -237,6 +243,8 @@ export const useStore = create((set, get) => ({
           });
           unsubscribers.push(ttUnsub);
 
+
+
         } catch (e) {
           console.error("Failed to load user session data from Firestore:", e);
         } finally {
@@ -249,6 +257,7 @@ export const useStore = create((set, get) => ({
           notes: [], 
           studySessions: [], 
           timetables: [], 
+          timelineCompletions: {},
           streak: 1, 
           productivityScore: 60, 
           isAuthLoading: false 
@@ -457,5 +466,35 @@ export const useStore = create((set, get) => ({
     };
 
     await dbSaveTimetable(newTimetable);
+  },
+
+  // Timeline completions
+  toggleTimelineCompletion: async (dateStr, slotIndex) => {
+    const { user, timelineCompletions } = get();
+    if (!user) return;
+    
+    // Optimistic UI update
+    const currentCompletions = timelineCompletions[dateStr] || [];
+    let newIndices;
+    if (currentCompletions.includes(slotIndex)) {
+      newIndices = currentCompletions.filter(i => i !== slotIndex);
+    } else {
+      newIndices = [...currentCompletions, slotIndex];
+    }
+    
+    set({
+      timelineCompletions: {
+        ...timelineCompletions,
+        [dateStr]: newIndices
+      }
+    });
+
+    try {
+      await dbToggleTimelineCompletion(user.uid, dateStr, slotIndex);
+    } catch (err) {
+      // Revert on error
+      set({ timelineCompletions });
+      throw err;
+    }
   }
 }));
