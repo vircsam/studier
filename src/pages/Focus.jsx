@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { useFirestore } from "../hooks/useFirestore";
 import { useToast } from "../context/ToastContext";
+import { useStore } from "../store/useStore";
 import { 
   Play, Pause, RotateCcw, Timer, Award, Coffee, BookOpen, 
   ListTodo, CheckCircle2, Volume2, VolumeX 
@@ -12,16 +13,30 @@ export default function Focus() {
   const { flashcards, logStudySession, studySessions, timetables } = useFirestore();
   const { showToast } = useToast();
 
-  const [mode, setMode] = useState("focus"); // focus, short_break, long_break
-  const [timeLeft, setTimeLeft] = useState(25 * 60);
-  const [isRunning, setIsRunning] = useState(false);
-  const [selectedSubject, setSelectedSubject] = useState("General");
+  const { 
+    focusMode: mode, 
+    focusTimeLeft: timeLeft, 
+    focusIsRunning: isRunning, 
+    focusTargetEndTime, 
+    focusSelectedSubject: selectedSubject,
+    focusDurationSetting: focusDuration,
+    setFocusState 
+  } = useStore();
+
+  const setMode = (val) => setFocusState({ focusMode: val });
+  const setTimeLeft = (val) => setFocusState({ focusTimeLeft: val });
+  const setIsRunning = (val) => setFocusState({ focusIsRunning: val });
+  const setSelectedSubject = (val) => setFocusState({ focusSelectedSubject: val });
+  const setFocusDuration = (val) => setFocusState({ focusDurationSetting: val });
+
   const [soundEnabled, setSoundEnabled] = useState(true);
 
   const timerRef = useRef(null);
-  const targetEndTimeRef = useRef(null);
-
-  const [focusDuration, setFocusDuration] = useState(25 * 60);
+  const targetEndTimeRef = useRef(focusTargetEndTime);
+  
+  useEffect(() => {
+    targetEndTimeRef.current = focusTargetEndTime;
+  }, [focusTargetEndTime]);
 
   // Mode durations in seconds
   const DURATIONS = useMemo(() => ({
@@ -60,9 +75,11 @@ export default function Focus() {
   useEffect(() => {
     if (location.state?.duration) {
       const durationSeconds = Number(location.state.duration) * 60;
-      setFocusDuration(durationSeconds);
-      setTimeLeft(durationSeconds);
-      setMode("focus");
+      setFocusState({
+        focusDurationSetting: durationSeconds,
+        focusTimeLeft: durationSeconds,
+        focusMode: "focus"
+      });
     }
     if (location.state?.subject) {
       setSelectedSubject(location.state.subject);
@@ -73,15 +90,14 @@ export default function Focus() {
   useEffect(() => {
     if (isRunning) {
       if (!targetEndTimeRef.current) {
-        targetEndTimeRef.current = Date.now() + timeLeft * 1000;
+        const newTarget = Date.now() + timeLeft * 1000;
+        setFocusState({ focusTargetEndTime: newTarget });
       }
       timerRef.current = setInterval(() => {
         const remaining = Math.round((targetEndTimeRef.current - Date.now()) / 1000);
         if (remaining <= 0) {
           clearInterval(timerRef.current);
-          setTimeLeft(0);
-          setIsRunning(false);
-          targetEndTimeRef.current = null;
+          setFocusState({ focusTimeLeft: 0, focusIsRunning: false, focusTargetEndTime: null });
           handleTimerComplete();
         } else {
           setTimeLeft(remaining);
@@ -89,7 +105,9 @@ export default function Focus() {
       }, 1000);
     } else {
       if (timerRef.current) clearInterval(timerRef.current);
-      targetEndTimeRef.current = null;
+      if (!isRunning && focusTargetEndTime) {
+        setFocusState({ focusTargetEndTime: null });
+      }
     }
 
     return () => {
@@ -156,9 +174,7 @@ export default function Focus() {
   };
 
   const handleReset = () => {
-    setIsRunning(false);
-    targetEndTimeRef.current = null;
-    setTimeLeft(DURATIONS[mode]);
+    setFocusState({ focusIsRunning: false, focusTargetEndTime: null, focusTimeLeft: DURATIONS[mode] });
     showToast("Timer reset", "info");
   };
 

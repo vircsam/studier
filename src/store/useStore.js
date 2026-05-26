@@ -53,6 +53,15 @@ export const useStore = create((set, get) => ({
   streak: 1,
   productivityScore: 60,
 
+  // Timer State
+  focusMode: "focus",
+  focusTimeLeft: 25 * 60,
+  focusIsRunning: false,
+  focusTargetEndTime: null,
+  focusSelectedSubject: "General",
+  focusDurationSetting: 25 * 60,
+  setFocusState: (updates) => set((state) => ({ ...state, ...updates })),
+
   // Theme Actions
   toggleTheme: () => {
     const nextTheme = get().theme === "dark" ? "light" : "dark";

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useFirestore } from "../hooks/useFirestore";
 import { useToast } from "../context/ToastContext";
@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { 
   format, getWeekDays, getMonthDays, isSameMonth, 
-  addMonths, subMonths, addWeeks, subWeeks, isToday
+  addMonths, subMonths, addWeeks, subWeeks, isToday, startOfWeek, endOfWeek, eachDayOfInterval, startOfMonth, endOfMonth
 } from "../utils/calendar";
 
 export default function Timeline() {
@@ -17,6 +17,8 @@ export default function Timeline() {
   const { timelineCompletions, toggleTimelineCompletion, calendarEvents, addCalendarEvent, toggleCalendarEvent } = useStore();
   const { showToast } = useToast();
   const navigate = useNavigate();
+
+  const gridScrollRef = useRef(null);
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState("week"); // "day", "week" or "month"
@@ -29,12 +31,62 @@ export default function Timeline() {
   }, [timetables]);
 
   const HOURS = Array.from({ length: 24 }, (_, i) => i);
-  const HOUR_HEIGHT = 100; // px per hour in the timeline grid
+  const HOUR_HEIGHT = 160; // px per hour in the timeline grid
 
-  const weekDays = useMemo(() => getWeekDays(currentDate), [currentDate]);
-  const monthDays = useMemo(() => getMonthDays(currentDate), [currentDate]);
+  const weekStart = startOfWeek(currentDate);
+  const weekEnd = endOfWeek(currentDate);
+  const monthStart = startOfMonth(currentDate);
+  const monthEnd = endOfMonth(currentDate);
   
-  const displayDays = useMemo(() => viewMode === "day" ? [currentDate] : weekDays, [viewMode, currentDate, weekDays]);
+  const displayDays = useMemo(() => {
+    if (viewMode === "day") return [currentDate];
+    if (viewMode === "week") return eachDayOfInterval({ start: weekStart, end: weekEnd });
+    return eachDayOfInterval({ start: monthStart, end: monthEnd });
+  }, [viewMode, currentDate, weekStart, weekEnd, monthStart, monthEnd]);
+
+  useEffect(() => {
+    if (viewMode !== "month" && gridScrollRef.current) {
+      let earliest = 24;
+      displayDays.forEach(day => {
+        const dateStr = format(day, 'yyyy-MM-dd');
+        let slots = [];
+        
+        if (activeTimetable?.schedule) {
+          const dayName = format(day, 'EEEE');
+          const specificDate = activeTimetable.schedule.find(s => s.day === dateStr);
+          if (specificDate?.slots) {
+            slots = [...specificDate.slots];
+          } else {
+            const repeating = activeTimetable.schedule.find(s => s.day === dayName);
+            if (repeating?.slots && repeating.slots.length > 0) {
+              const timetableDate = activeTimetable.createdAt ? new Date(activeTimetable.createdAt) : new Date(0);
+              timetableDate.setHours(0,0,0,0);
+              if (day >= timetableDate || isSameMonth(day, timetableDate)) {
+                slots = [...repeating.slots];
+              }
+            }
+          }
+        }
+        const oneOffs = calendarEvents[dateStr] || [];
+        slots = [...slots, ...oneOffs];
+
+        slots.forEach(slot => {
+          if (!slot.time) return;
+          const match = slot.time.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+          if (match) {
+            let h = parseInt(match[1]);
+            const ampm = match[3]?.toUpperCase();
+            if (ampm === "PM" && h < 12) h += 12;
+            if (ampm === "AM" && h === 12) h = 0;
+            if (h < earliest) earliest = h;
+          }
+        });
+      });
+      
+      const targetScroll = Math.max(0, (earliest === 24 ? 8 : earliest) * HOUR_HEIGHT - 40);
+      gridScrollRef.current.scrollTop = targetScroll;
+    }
+  }, [viewMode, currentDate, timetables, activeTimetable, calendarEvents, displayDays]);
 
   const handlePrev = () => {
     setCurrentDate(prev => viewMode === "week" ? subWeeks(prev, 1) : subMonths(prev, 1));
@@ -101,9 +153,10 @@ export default function Timeline() {
         slots = [...specificDate.slots.map((s, idx) => ({ ...s, isRepeating: true, originalIndex: idx }))];
       } else {
         const repeating = activeTimetable.schedule.find(s => s.day === dayName);
-        if (repeating?.slots) {
-          const timetableDate = activeTimetable.createdAt ? new Date(activeTimetable.createdAt) : new Date();
-          if (date.getMonth() === timetableDate.getMonth() && date.getFullYear() === timetableDate.getFullYear()) {
+        if (repeating?.slots && repeating.slots.length > 0) {
+          const timetableDate = activeTimetable.createdAt ? new Date(activeTimetable.createdAt) : new Date(0);
+          timetableDate.setHours(0,0,0,0);
+          if (date >= timetableDate || isSameMonth(date, timetableDate)) {
             slots = [...repeating.slots.map((s, idx) => ({ ...s, isRepeating: true, originalIndex: idx }))];
           }
         }
@@ -255,7 +308,7 @@ export default function Timeline() {
   return (
     <div className="space-y-6 h-[calc(100vh-8rem)] flex flex-col">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 flex-shrink-0">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 flex-shrink-0 w-full">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-slate-800 dark:text-white flex items-center gap-2">
             <CalendarDays className="w-6 h-6 text-brand-500" />
@@ -266,7 +319,7 @@ export default function Timeline() {
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center gap-4">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-4 flex-wrap w-full lg:w-auto">
           <div className="flex items-center gap-4 text-xs mr-2">
             <div className="flex items-center gap-1.5">
               <div className="w-2.5 h-2.5 rounded bg-brand-500/15 border border-brand-500/30" />
@@ -291,14 +344,14 @@ export default function Timeline() {
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <button onClick={handleToday} className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors text-slate-700 dark:text-slate-200 cursor-pointer">
               Today
             </button>
             <div className="flex items-center bg-slate-100 dark:bg-slate-900 rounded-xl p-1 border border-slate-200 dark:border-slate-800">
               <button onClick={handlePrev} className="p-1 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors text-slate-500 cursor-pointer"><ChevronLeft className="w-4 h-4" /></button>
               <div className="px-2 text-xs font-bold text-slate-700 dark:text-slate-300 min-w-[120px] text-center">
-                {viewMode === "day" ? format(currentDate, 'EEEE, MMM d') : viewMode === "week" ? `${format(weekDays[0], 'MMM d')} - ${format(weekDays[6], 'MMM d, yyyy')}` : format(currentDate, 'MMMM yyyy')}
+                {viewMode === "day" ? format(currentDate, 'EEEE, MMM d') : viewMode === "week" ? `${format(displayDays[0], 'MMM d')} - ${format(displayDays[6], 'MMM d, yyyy')}` : format(currentDate, 'MMMM yyyy')}
               </div>
               <button onClick={handleNext} className="p-1 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors text-slate-500 cursor-pointer"><ChevronRight className="w-4 h-4" /></button>
             </div>
@@ -359,7 +412,7 @@ export default function Timeline() {
               </div>
 
               {/* Grid Body */}
-              <div className="flex-1 overflow-y-auto overflow-x-hidden relative scroll-smooth scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800">
+              <div ref={gridScrollRef} className="flex-1 overflow-y-auto overflow-x-hidden relative scroll-smooth scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800">
                 <div className="flex relative" style={{ height: `${24 * HOUR_HEIGHT}px` }}>
                   
                   {/* Left Axis: Hour Labels */}
@@ -409,7 +462,7 @@ export default function Timeline() {
 
               {/* Month Grid */}
               <div className="flex-1 grid grid-cols-7 auto-rows-fr">
-                {monthDays.map((day, i) => {
+                {displayDays.map((day, i) => {
                   const daySchedule = getCombinedDaySchedule(day);
                   const isCurrentMonth = isSameMonth(day, currentDate);
                   const today = isToday(day);

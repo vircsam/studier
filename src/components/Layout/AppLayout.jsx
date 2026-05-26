@@ -20,7 +20,7 @@ export default function AppLayout({ children, title }) {
     if (!isAuthLoading) {
       const publicPaths = ["/", "/login"];
       if (!user && !publicPaths.includes(location.pathname)) {
-        navigate("/login");
+        navigate("/");
       } else if (user && (location.pathname === "/login" || location.pathname === "/")) {
         navigate("/dashboard");
       }
@@ -29,7 +29,7 @@ export default function AppLayout({ children, title }) {
 
   const isPublic = ["/", "/login"].includes(location.pathname);
 
-  if (isAuthLoading && !isPublic) {
+  if (isAuthLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(125,211,252,0.16),_transparent_24%),linear-gradient(180deg,_#f8fbff_0%,_#edf5ff_100%)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.12),_transparent_20%),linear-gradient(180deg,_#081120_0%,_#0d1b2f_100%)]">
         <div className="relative flex items-center justify-center w-16 h-16">

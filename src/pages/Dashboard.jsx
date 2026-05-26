@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useFirestore } from "../hooks/useFirestore";
+import { useStore } from "../store/useStore";
 import { 
   Award, 
   BookOpen, 
@@ -18,6 +19,7 @@ import {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { calendarEvents } = useStore();
   const { 
     flashcards, 
     notes, 
@@ -57,28 +59,65 @@ export default function Dashboard() {
 
   // 3. Fetch today's study schedule from timetable
   const todaySchedule = useMemo(() => {
-    if (!timetables || timetables.length === 0) return [];
-    const activeTt = timetables[0];
+    let slots = [];
+    if (timetables && timetables.length > 0) {
+      const activeTt = timetables[0];
+      
+      const today = new Date();
+      const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const todayName = DAYS[today.getDay()];
+      
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      const localDateStr = `${yyyy}-${mm}-${dd}`;
+      
+      const specificDate = activeTt.schedule?.find(s => s.day === localDateStr);
+      if (specificDate?.slots) {
+         slots = [...specificDate.slots];
+      } else {
+        const repeating = activeTt.schedule?.find(s => s.day === todayName);
+        if (repeating?.slots) {
+          slots = [...repeating.slots];
+        } else if (activeTt.schedule?.length === 1) {
+          slots = [...activeTt.schedule[0].slots];
+        }
+      }
+    }
     
-    // Get current day string
+    // Add calendar events for today
     const today = new Date();
-    const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    const todayName = DAYS[today.getDay()];
-    const utcDateStr = today.toISOString().split("T")[0];
-    
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, '0');
     const dd = String(today.getDate()).padStart(2, '0');
     const localDateStr = `${yyyy}-${mm}-${dd}`;
+    const oneOffs = calendarEvents[localDateStr] || [];
     
-    // Find matching day in schedule
-    const daySchedule = activeTt.schedule?.find(s => 
-      s.day === todayName || 
-      s.day === utcDateStr || 
-      s.day === localDateStr
-    );
-    return daySchedule?.slots?.filter(s => s.subject !== "Break") || [];
-  }, [timetables]);
+    slots = [...slots, ...oneOffs];
+
+    const parseTimeToDecimal = (timeStr) => {
+      if (!timeStr) return 0;
+      const cleanStr = timeStr.trim();
+      const match = cleanStr.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+      if (!match) return 0;
+      let hours = parseInt(match[1], 10);
+      const minutes = parseInt(match[2], 10);
+      const ampm = match[3];
+      if (ampm) {
+        if (ampm.toUpperCase() === "PM" && hours < 12) hours += 12;
+        if (ampm.toUpperCase() === "AM" && hours === 12) hours = 0;
+      }
+      return hours + minutes / 60;
+    };
+
+    slots.sort((a, b) => {
+       const aTime = a.time ? parseTimeToDecimal(a.time.split("-")[0]) : 0;
+       const bTime = b.time ? parseTimeToDecimal(b.time.split("-")[0]) : 0;
+       return aTime - bTime;
+    });
+
+    return slots.filter(s => s.subject !== "Break");
+  }, [timetables, calendarEvents]);
 
   const handleCompleteExam = async (subject) => {
     if (!timetables || timetables.length === 0) return;
@@ -218,23 +257,25 @@ export default function Dashboard() {
 
           <div className="flex-1 overflow-y-auto mt-6 pr-2 space-y-4">
             {todaySchedule.length > 0 ? (
-              todaySchedule.map((slot, i) => (
-                <div 
-                  key={i} 
-                  onClick={() => navigate("/pomodoro", { state: { duration: slot.duration || 45, subject: slot.subject } })}
-                  className="p-5 rounded-2xl bg-white/50 dark:bg-slate-900/40 border border-brand-50 dark:border-slate-800 flex items-center justify-between gap-4 cursor-pointer hover:border-brand-300 transition-all hover:bg-brand-50/50 dark:hover:bg-slate-800/60 shadow-sm"
-                >
-                  <div className="space-y-1 min-w-0">
-                    <span className="font-bold text-lg text-slate-800 dark:text-slate-200 truncate block">{slot.subject}</span>
-                    <span className="text-sm font-medium text-brand-600 dark:text-brand-400 block">{slot.type}</span>
+              <>
+                {todaySchedule.map((slot, i) => (
+                  <div 
+                    key={i} 
+                    onClick={() => navigate("/pomodoro", { state: { duration: slot.duration || 45, subject: slot.subject } })}
+                    className="p-4 rounded-xl bg-white/50 dark:bg-slate-900/40 border border-brand-50 dark:border-slate-800 flex items-center justify-between gap-4 cursor-pointer hover:border-brand-300 transition-all hover:bg-brand-50/50 dark:hover:bg-slate-800/60 shadow-sm"
+                  >
+                    <div className="space-y-0.5 min-w-0">
+                      <span className="font-bold text-base text-slate-800 dark:text-slate-200 truncate block">{slot.subject}</span>
+                      <span className="text-xs font-medium text-brand-600 dark:text-brand-400 block">{slot.type}</span>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                        {slot.time}
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-right flex-shrink-0">
-                    <span className="text-sm font-bold px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                      {slot.time}
-                    </span>
-                  </div>
-                </div>
-              ))
+                ))}
+              </>
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-center p-6">
                 <div className="w-16 h-16 rounded-full bg-brand-50 dark:bg-brand-900/30 flex items-center justify-center mb-4">
@@ -247,6 +288,11 @@ export default function Dashboard() {
               </div>
             )}
           </div>
+          {todaySchedule.length > 0 && (
+            <Link to="/timetable" className="mt-2 flex-shrink-0 block text-center px-6 py-2.5 rounded-xl bg-brand-500 text-white font-bold hover:bg-brand-600 transition-colors shadow-sm">
+              View Timetable
+            </Link>
+          )}
         </div>
 
         {/* Upcoming Exams Widget */}

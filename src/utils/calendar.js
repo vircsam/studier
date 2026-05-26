@@ -36,5 +36,10 @@ export {
   subMonths, 
   addWeeks, 
   subWeeks,
-  isToday
+  isToday,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval
 };

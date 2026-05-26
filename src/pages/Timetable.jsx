@@ -522,19 +522,25 @@ export default function Timetable() {
         let updatedSchedule = [];
         const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-        if (selectedGenerateDay && selectedGenerateDay !== "All Days") {
+          if (selectedGenerateDay && selectedGenerateDay !== "All Days") {
           // If we have an active timetable, merge with it
+          const generatedSlotObj = data.schedule.find(d => d.day === targetDayVal) || data.schedule[0];
+          // Force the day to match targetDayVal to fix timezone/naming issues
+          generatedSlotObj.day = targetDayVal;
+          
           if (activeTimetable && activeTimetable.schedule) {
             updatedSchedule = activeTimetable.schedule.filter(d => d.day !== targetDayVal);
-            updatedSchedule.push(data.schedule.find(d => d.day === targetDayVal) || data.schedule[0]);
+            updatedSchedule.push(generatedSlotObj);
           } else {
             // Otherwise create a weekly structure where only targetDay is populated, others are empty
             updatedSchedule = DAYS.map(dayName => {
-              if (dayName === targetDayVal) return data.schedule[0];
+              if (dayName === targetDayVal) return generatedSlotObj;
               return { day: dayName, slots: [] };
             });
             if (selectedGenerateDay === "Today Only" || selectedGenerateDay === "Specific Date") {
-              updatedSchedule.unshift(data.schedule[0]);
+              if (!DAYS.includes(targetDayVal)) {
+                 updatedSchedule.unshift(generatedSlotObj);
+              }
             }
           }
         } else {
@@ -797,9 +803,9 @@ export default function Timetable() {
         </div>
 
         {/* Right Side: Generated Routine Output view */}
-        <div className="lg:col-span-2 space-y-6 h-full">
+        <div className="lg:col-span-2 space-y-6 h-[700px]">
           {activeTimetable ? (
-            <div className="glass-panel p-6 rounded-3xl flex flex-col h-[750px]">
+            <div className="glass-panel p-6 rounded-3xl flex flex-col h-full">
               <div className="flex-1 flex flex-col min-h-0">
                 {/* Header info */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/50 dark:border-slate-800/40">
@@ -884,8 +890,7 @@ export default function Timetable() {
                               navigate("/pomodoro", { state: { duration: slot.duration, subject: slot.subject } });
                             }
                           }}
-                          style={{ minHeight: isBreak ? '64px' : Math.max(100, (slot.duration || 45) * 2) + 'px' }}
-                          className={`p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm transition-all shadow-sm ${
+                          className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm transition-all shadow-sm ${
                             isBreak 
                               ? "bg-slate-50/50 dark:bg-slate-950/20 border-dashed border-slate-200 dark:border-slate-850 opacity-60" 
                               : `bg-slate-100/50 dark:bg-slate-900/40 border-slate-200/50 dark:border-slate-800/30 cursor-pointer hover:border-brand-500/40 hover:bg-slate-200/20 dark:hover:bg-slate-900/60 ${
@@ -1001,7 +1006,7 @@ export default function Timetable() {
               </div>
             </div>
           ) : (
-            <div className="glass-panel p-16 rounded-3xl text-center space-y-4 flex flex-col items-center justify-center h-[750px]">
+            <div className="glass-panel p-16 rounded-3xl text-center space-y-4 flex flex-col items-center justify-center h-full">
               <div className="w-16 h-16 rounded-2xl bg-brand-500/10 text-brand-500 flex items-center justify-center">
                 <Calendar className="w-8 h-8" />
               </div>

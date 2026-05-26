@@ -34,11 +34,11 @@ export default function Landing() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden font-sans text-slate-800 selection:bg-brand-500 selection:text-white bg-white">
+    <div className="relative min-h-screen overflow-x-hidden font-sans text-slate-800 selection:bg-brand-500 selection:text-white bg-white">
       {/* Decorative Orbs - Light Theme */}
-      <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-brand-200/40 blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-green-200/50 blur-[150px] pointer-events-none" />
-      <div className="absolute top-[20%] right-[10%] w-[40%] h-[40%] rounded-full bg-sky-200/30 blur-[120px] pointer-events-none" />
+      <div className="absolute top-[-5%] left-[-10%] w-[400px] h-[400px] rounded-full bg-brand-200/40 blur-[150px] pointer-events-none" />
+      <div className="absolute bottom-[-5%] right-[-10%] w-[400px] h-[400px] rounded-full bg-green-200/50 blur-[150px] pointer-events-none" />
+      <div className="absolute top-[20%] right-[10%] w-[300px] h-[300px] rounded-full bg-sky-200/30 blur-[120px] pointer-events-none" />
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-200/60 to-transparent pointer-events-none" />
 
       {/* Floating Navbar */}
