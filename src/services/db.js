@@ -59,6 +59,7 @@ export async function createUserProfile(uid, profileData) {
     userData.createdAt = new Date().toISOString();
     userData.streak = 1;
     userData.productivityScore = 60;
+    userData.plan = "Free";
     await setDoc(userRef, userData);
     return userData;
   } else {
@@ -97,6 +98,11 @@ export async function createUserProfile(uid, profileData) {
 export async function getUserProfile(uid) {
   const userSnap = await getDoc(doc(db, "users", uid));
   return userSnap.exists() ? userSnap.data() : null;
+}
+
+export async function dbUpdateUserPlan(uid, newPlan) {
+  const userRef = doc(db, "users", uid);
+  await updateDoc(userRef, { plan: newPlan });
 }
 
 /**

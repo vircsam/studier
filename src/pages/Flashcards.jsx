@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useFirestore } from "../hooks/useFirestore";
 import { useToast } from "../context/ToastContext";
+import { useStore } from "../store/useStore";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   BookOpen, Star, Plus, Trash2, Search, Sparkles, 
@@ -17,6 +18,9 @@ export default function Flashcards() {
   } = useFirestore();
   
   const { showToast } = useToast();
+  const { hasReachedLimit, user } = useStore();
+
+  const maxFlashcards = user?.plan === "Free" ? 10 : user?.plan === "Pro" ? 50 : "∞";
 
   // Search and Filter State
   const [searchQuery, setSearchQuery] = useState("");
@@ -77,9 +81,12 @@ export default function Flashcards() {
     return groups;
   }, [filteredCards]);
 
-  // 4. Handle card manual add
   const handleAddCard = async (e) => {
     e.preventDefault();
+    if (hasReachedLimit("flashcards")) {
+      showToast("Plan limit reached. Upgrade to Pro to add more flashcards.", "warning");
+      return;
+    }
     if (!newQuestion.trim() || !newAnswer.trim()) {
       showToast("Question and Answer are required", "warning");
       return;
@@ -183,6 +190,9 @@ export default function Flashcards() {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <span className="text-xs font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
+            {flashcards.length} / {maxFlashcards} Cards
+          </span>
           <button 
             onClick={() => setShowAddModal(true)}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 shadow-lg shadow-brand-500/25 transition-all cursor-pointer"

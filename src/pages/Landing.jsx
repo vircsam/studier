@@ -101,6 +101,12 @@ export default function Landing() {
               </span>
             </div>
 
+            <div className="hidden md:flex items-center gap-6">
+              <a href="#features" className="text-sm font-bold text-slate-600 hover:text-brand-600 transition-colors">Features</a>
+              <a href="#reviews" className="text-sm font-bold text-slate-600 hover:text-brand-600 transition-colors">Reviews</a>
+              <a href="#pricing" className="text-sm font-bold text-slate-600 hover:text-brand-600 transition-colors">Pricing</a>
+            </div>
+
             <div className="flex items-center gap-1 sm:gap-3">
               <Link
                 to="/login"
@@ -170,10 +176,11 @@ export default function Landing() {
             >
               <Link
                 to="/login"
-                className="flex items-center gap-2 w-full sm:w-auto justify-center px-10 py-5 text-lg font-bold text-white bg-gradient-to-r from-brand-400 via-brand-500 to-green-500 hover:from-brand-500 hover:to-green-600 rounded-2xl shadow-xl shadow-brand-500/30 hover:scale-105 active:scale-95 transition-all"
+                className="group flex items-center gap-2 w-full sm:w-auto justify-center px-10 py-5 text-lg font-bold text-brand-600 bg-transparent border-2 border-brand-500/50 hover:border-brand-500 rounded-2xl hover:bg-brand-50 shadow-[0_0_15px_rgba(6,182,212,0.15)] hover:shadow-[0_0_25px_rgba(6,182,212,0.4)] hover:scale-105 active:scale-95 transition-all overflow-hidden relative"
               >
-                Start Studying Free
-                <ChevronRight className="w-6 h-6" />
+                <div className="absolute inset-0 bg-brand-500/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                <span className="relative z-10">Start Free</span>
+                <ChevronRight className="relative z-10 w-6 h-6" />
               </Link>
             </motion.div>
           </motion.div>
@@ -318,7 +325,7 @@ export default function Landing() {
         </section>
 
         {/* Infinite Scrolling Reviews Marquee */}
-        <section className="py-24 bg-slate-50/50 border-y border-slate-100 overflow-hidden relative">
+        <section id="reviews" className="py-24 bg-slate-50/50 border-y border-slate-100 overflow-hidden relative">
           <div className="absolute top-0 left-0 bottom-0 w-32 bg-gradient-to-r from-slate-50/50 to-transparent z-10 pointer-events-none" />
           <div className="absolute top-0 right-0 bottom-0 w-32 bg-gradient-to-l from-slate-50/50 to-transparent z-10 pointer-events-none" />
           
@@ -359,7 +366,7 @@ export default function Landing() {
         </section>
 
         {/* Expanded Pricing Section */}
-        <section className="px-6 py-32 max-w-7xl mx-auto relative z-10">
+        <section id="pricing" className="px-6 py-32 max-w-7xl mx-auto relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-20 space-y-4">
             <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-800">Invest in your grades.</h2>
             <p className="text-xl text-slate-500 font-medium">Unlock the full power of the Studier ecosystem.</p>
@@ -367,12 +374,12 @@ export default function Landing() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {/* Free Plan */}
             <div className="p-8 md:p-10 rounded-[2.5rem] bg-white border border-slate-200 shadow-sm flex flex-col hover:shadow-xl transition-all">
-              <h3 className="text-2xl font-bold text-slate-800 mb-2">Basic</h3>
+              <h3 className="text-2xl font-bold text-slate-800 mb-2">Free</h3>
               <p className="text-slate-500 text-sm mb-6 font-medium">Essential tools to get started</p>
               <div className="text-5xl font-black text-slate-800 mb-8">₹0 <span className="text-xl font-bold text-slate-400">/mo</span></div>
               <ul className="space-y-4 mb-10 flex-1">
-                <li className="flex items-start gap-3 text-slate-700 font-medium"><CheckCircle2 className="w-6 h-6 text-slate-400 shrink-0" /> Up to 50 Flashcards</li>
-                <li className="flex items-start gap-3 text-slate-700 font-medium"><CheckCircle2 className="w-6 h-6 text-slate-400 shrink-0" /> Up to 10 Notes</li>
+                <li className="flex items-start gap-3 text-slate-700 font-medium"><CheckCircle2 className="w-6 h-6 text-slate-400 shrink-0" /> Up to 10 Flashcards</li>
+                <li className="flex items-start gap-3 text-slate-700 font-medium"><CheckCircle2 className="w-6 h-6 text-slate-400 shrink-0" /> Up to 5 Notes</li>
                 <li className="flex items-start gap-3 text-slate-700 font-medium"><CheckCircle2 className="w-6 h-6 text-slate-400 shrink-0" /> Basic Pomodoro Timer</li>
                 <li className="flex items-start gap-3 text-slate-700 font-medium"><CheckCircle2 className="w-6 h-6 text-slate-400 shrink-0" /> Standard Dashboard UI</li>
                 <li className="flex items-start gap-3 text-slate-400 font-medium opacity-50"><CheckCircle2 className="w-6 h-6 text-slate-200 shrink-0" /> No Advanced Analytics</li>
@@ -380,15 +387,15 @@ export default function Landing() {
               <Link to="/login" className="w-full py-4 px-6 rounded-2xl font-bold text-center border-2 border-slate-200 text-slate-700 hover:border-slate-800 hover:text-slate-900 transition-colors">Start Free</Link>
             </div>
 
-            {/* Hero Plan */}
+            {/* Pro Plan */}
             <div className="p-8 md:p-10 rounded-[2.5rem] bg-gradient-to-b from-brand-600 to-brand-700 border border-brand-500 shadow-2xl shadow-brand-500/30 flex flex-col relative transform md:-translate-y-6">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-full shadow-lg">Most Popular</div>
               <h3 className="text-2xl font-bold text-white mb-2">Pro</h3>
               <p className="text-brand-100 text-sm mb-6 font-medium">For serious academic performance</p>
               <div className="text-5xl font-black text-white mb-8">₹99 <span className="text-xl font-bold text-brand-200">/mo</span></div>
               <ul className="space-y-4 mb-10 flex-1">
-                <li className="flex items-start gap-3 text-white font-medium"><CheckCircle2 className="w-6 h-6 text-green-400 shrink-0" /> Unlimited Flashcards</li>
-                <li className="flex items-start gap-3 text-white font-medium"><CheckCircle2 className="w-6 h-6 text-green-400 shrink-0" /> Unlimited Notes</li>
+                <li className="flex items-start gap-3 text-white font-medium"><CheckCircle2 className="w-6 h-6 text-green-400 shrink-0" /> Up to 50 Flashcards</li>
+                <li className="flex items-start gap-3 text-white font-medium"><CheckCircle2 className="w-6 h-6 text-green-400 shrink-0" /> Up to 50 Notes</li>
                 <li className="flex items-start gap-3 text-white font-medium"><CheckCircle2 className="w-6 h-6 text-green-400 shrink-0" /> Auto Timetable Generation</li>
                 <li className="flex items-start gap-3 text-white font-medium"><CheckCircle2 className="w-6 h-6 text-green-400 shrink-0" /> Streaks & Focus Tracking</li>
                 <li className="flex items-start gap-3 text-white font-medium"><CheckCircle2 className="w-6 h-6 text-green-400 shrink-0" /> Priority Email Support</li>
@@ -402,12 +409,10 @@ export default function Landing() {
               <p className="text-slate-400 text-sm mb-6 font-medium">God-mode tools for absolute mastery</p>
               <div className="text-5xl font-black text-white mb-8">₹299 <span className="text-xl font-bold text-slate-500">/mo</span></div>
               <ul className="space-y-4 mb-10 flex-1">
+                <li className="flex items-start gap-3 text-slate-200 font-medium"><CheckCircle2 className="w-6 h-6 text-brand-500 shrink-0" /> Unlimited Flashcards</li>
+                <li className="flex items-start gap-3 text-slate-200 font-medium"><CheckCircle2 className="w-6 h-6 text-brand-500 shrink-0" /> Unlimited Notes</li>
                 <li className="flex items-start gap-3 text-slate-200 font-medium"><CheckCircle2 className="w-6 h-6 text-brand-500 shrink-0" /> Everything in Pro</li>
-                <li className="flex items-start gap-3 text-slate-200 font-medium"><CheckCircle2 className="w-6 h-6 text-brand-500 shrink-0" /> AI-Powered Analytics insights</li>
-                <li className="flex items-start gap-3 text-slate-200 font-medium"><CheckCircle2 className="w-6 h-6 text-brand-500 shrink-0" /> Smart Exam Defeat Scheduling</li>
-                <li className="flex items-start gap-3 text-slate-200 font-medium"><CheckCircle2 className="w-6 h-6 text-brand-500 shrink-0" /> Custom App Themes</li>
-                <li className="flex items-start gap-3 text-slate-200 font-medium"><CheckCircle2 className="w-6 h-6 text-brand-500 shrink-0" /> 24/7 Dedicated Mentorship</li>
-                <li className="flex items-start gap-3 text-slate-200 font-medium"><CheckCircle2 className="w-6 h-6 text-brand-500 shrink-0" /> CSV Data Export</li>
+                <li className="flex items-start gap-3 text-slate-200 font-medium"><CheckCircle2 className="w-6 h-6 text-brand-500 shrink-0" /> AI features</li>
               </ul>
               <Link to="/login" className="w-full py-4 px-6 rounded-2xl font-bold text-center bg-brand-600 text-white hover:bg-brand-500 transition-colors">Go Pinnacle</Link>
             </div>

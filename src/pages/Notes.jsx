@@ -11,6 +11,9 @@ export default function Notes() {
   const { notes, addNote, updateNote, deleteNote } = useFirestore();
   const { showToast } = useToast();
   const user = useStore(state => state.user);
+  const hasReachedLimit = useStore(state => state.hasReachedLimit);
+
+  const maxNotes = user?.plan === "Free" ? 5 : user?.plan === "Pro" ? 50 : "∞";
 
   const [activeNoteId, setActiveNoteId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -139,6 +142,10 @@ export default function Notes() {
 
   // 6. Add note
   const handleCreateNote = async () => {
+    if (hasReachedLimit("notes")) {
+      showToast("Plan limit reached. Upgrade to Pro to add more notes.", "warning");
+      return;
+    }
     try {
       await addNote({
         title: "New Study Note",
@@ -244,12 +251,17 @@ export default function Notes() {
               <FileText className="w-5 h-5 text-brand-500" />
               Notes Library
             </h3>
-            <button 
-              onClick={handleCreateNote}
-              className="p-2 rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-400 hover:bg-brand-500/20 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full">
+                {notes.length} / {maxNotes}
+              </span>
+              <button 
+                onClick={handleCreateNote}
+                className="p-2 rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-400 hover:bg-brand-500/20 transition-colors cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           {/* Search bar */}

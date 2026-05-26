@@ -28,7 +28,8 @@ import {
   dbSaveTimetable,
   dbToggleTimelineCompletion,
   dbAddCalendarEvent,
-  dbToggleCalendarEvent
+  dbToggleCalendarEvent,
+  dbUpdateUserPlan
 } from "../services/db";
 
 // Helper to generate IDs
@@ -61,6 +62,32 @@ export const useStore = create((set, get) => ({
   focusSelectedSubject: "General",
   focusDurationSetting: 25 * 60,
   setFocusState: (updates) => set((state) => ({ ...state, ...updates })),
+
+  // Plan Limits checking
+  hasReachedLimit: (type) => {
+    const { user, flashcards, notes } = get();
+    if (!user) return true; // Block if not logged in
+    
+    const plan = user.plan || "Free";
+    if (plan === "Pinnacle") return false;
+
+    if (type === "flashcards") {
+      const limit = plan === "Pro" ? 50 : 10;
+      return flashcards.length >= limit;
+    }
+    if (type === "notes") {
+      const limit = plan === "Pro" ? 50 : 5;
+      return notes.length >= limit;
+    }
+    return false;
+  },
+
+  upgradePlan: async (newPlan) => {
+    const { user } = get();
+    if (!user) return;
+    await dbUpdateUserPlan(user.uid, newPlan);
+    set({ user: { ...user, plan: newPlan } });
+  },
 
   // Theme Actions
   toggleTheme: () => {

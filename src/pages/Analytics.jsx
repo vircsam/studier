@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useFirestore } from "../hooks/useFirestore";
 import { useToast } from "../context/ToastContext";
+import { useStore } from "../store/useStore";
 import { 
   BarChart3, Award, TrendingUp, Sparkles, BookOpen, Clock, 
   HelpCircle, ArrowUpRight, BarChart, CheckCircle2 
@@ -13,6 +14,7 @@ import {
 export default function Analytics() {
   const { studySessions, flashcards, streak, productivityScore } = useFirestore();
   const { showToast } = useToast();
+  const user = useStore(state => state.user);
 
 
   const metrics = useMemo(() => {
@@ -95,6 +97,29 @@ export default function Analytics() {
 
   // Color options for Pie Charts
   const COLORS = ["#8b5cf6", "#3b82f6", "#06b6d4", "#ec4899", "#f59e0b"];
+
+  if (user?.plan === "Free") {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6 text-center max-w-md mx-auto">
+        <div className="w-24 h-24 bg-brand-500/10 rounded-full flex items-center justify-center mb-4 relative">
+          <BarChart3 className="w-12 h-12 text-brand-500" />
+          <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-amber-400 rounded-full flex items-center justify-center shadow-lg">
+            <Sparkles className="w-4 h-4 text-white" />
+          </div>
+        </div>
+        <h2 className="text-3xl font-black text-slate-800 dark:text-white">Analytics Locked</h2>
+        <p className="text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+          The Free plan does not include Advanced Analytics. Upgrade to Pro to unlock deep-dive performance evaluations, strengths breakdowns, productivity tracking, and AI insights.
+        </p>
+        <button 
+          onClick={() => window.location.href="/#pricing"}
+          className="mt-4 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-brand-500 to-indigo-600 hover:from-brand-600 hover:to-indigo-700 text-white font-bold shadow-xl shadow-brand-500/30 transition-all cursor-pointer"
+        >
+          Upgrade to Pro
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
