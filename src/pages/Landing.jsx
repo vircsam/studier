@@ -196,17 +196,17 @@ export default function Landing() {
                   <div className="col-span-1 md:col-span-2 rounded-3xl bg-white border border-slate-100 p-6 shadow-sm shadow-slate-200/50 space-y-6">
                     <div className="h-8 w-1/2 rounded-xl bg-slate-100/70" />
                     <div className="grid grid-cols-3 gap-4">
-                      <div className="h-20 sm:h-24 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100/50 p-4 flex flex-col justify-between shadow-sm">
-                        <span className="text-[10px] sm:text-xs text-amber-600/70 font-bold uppercase tracking-wider">Streak</span>
-                        <span className="text-lg sm:text-2xl font-black text-amber-600 truncate">12 Days</span>
+                      <div className="h-20 sm:h-24 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 border border-amber-400 p-4 flex flex-col justify-between shadow-sm">
+                        <span className="text-[10px] sm:text-xs text-white/80 font-bold uppercase tracking-wider">Streak</span>
+                        <span className="text-lg sm:text-2xl font-black text-white truncate">12 Days</span>
                       </div>
-                      <div className="h-20 sm:h-24 rounded-2xl bg-gradient-to-br from-brand-50 to-sky-50 border border-brand-100/50 p-4 flex flex-col justify-between shadow-sm">
-                        <span className="text-[10px] sm:text-xs text-brand-600/70 font-bold uppercase tracking-wider">Due Cards</span>
-                        <span className="text-lg sm:text-2xl font-black text-brand-600 truncate">45 Cards</span>
+                      <div className="h-20 sm:h-24 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-600 border border-brand-500 p-4 flex flex-col justify-between shadow-sm">
+                        <span className="text-[10px] sm:text-xs text-white/80 font-bold uppercase tracking-wider">Due Cards</span>
+                        <span className="text-lg sm:text-2xl font-black text-white truncate">45 Cards</span>
                       </div>
-                      <div className="h-20 sm:h-24 rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100/50 p-4 flex flex-col justify-between shadow-sm">
-                        <span className="text-[10px] sm:text-xs text-green-600/70 font-bold uppercase tracking-wider">Productivity</span>
-                        <span className="text-lg sm:text-2xl font-black text-green-600 truncate">98%</span>
+                      <div className="h-20 sm:h-24 rounded-2xl bg-gradient-to-br from-green-400 to-emerald-500 border border-green-400 p-4 flex flex-col justify-between shadow-sm">
+                        <span className="text-[10px] sm:text-xs text-white/80 font-bold uppercase tracking-wider">Score</span>
+                        <span className="text-lg sm:text-2xl font-black text-white truncate">98%</span>
                       </div>
                     </div>
                     <div className="flex-1 rounded-2xl bg-white border border-slate-100 p-5 flex flex-col justify-between shadow-sm">

@@ -180,66 +180,70 @@ export default function Dashboard() {
 
       {/* Main Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Link to="/flashcards" className="glass-card p-8 rounded-[2rem] flex flex-col justify-between group h-48 relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
-            <BookOpen className="w-24 h-24 text-brand-500" />
+        <Link to="/flashcards" className="p-8 rounded-[2rem] bg-gradient-to-br from-brand-500 to-indigo-600 text-white shadow-xl hover:shadow-brand-500/30 transition-all flex flex-col justify-between group h-48 relative overflow-hidden border border-white/10">
+          <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:scale-110 transition-transform duration-500">
+            <BookOpen className="w-24 h-24 text-white" />
           </div>
-          <div className="z-10">
-            <span className="text-xs font-bold text-brand-600 dark:text-brand-400 uppercase tracking-widest bg-brand-50 dark:bg-brand-500/10 px-3 py-1 rounded-full">Due Flashcards</span>
+          <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-500" />
+          <div className="z-10 relative">
+            <span className="text-xs font-bold text-white uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm border border-white/10">Due Flashcards</span>
           </div>
-          <div className="z-10 space-y-1">
-            <p className="amita-bold text-4xl text-slate-800 dark:text-slate-100">
+          <div className="z-10 relative space-y-1">
+            <p className="amita-bold text-4xl text-white drop-shadow-sm">
               {dueCards.length}
             </p>
-            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Ready for review</p>
+            <p className="text-sm text-brand-100 font-medium">Ready for review</p>
           </div>
         </Link>
 
-        <Link to="/pomodoro" className="glass-card p-8 rounded-[2rem] flex flex-col justify-between group h-48 relative overflow-hidden">
-           <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
-            <Clock className="w-24 h-24 text-amber-500" />
+        <Link to="/pomodoro" className="p-8 rounded-[2rem] bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-xl hover:shadow-amber-500/30 transition-all flex flex-col justify-between group h-48 relative overflow-hidden border border-white/10">
+           <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:scale-110 transition-transform duration-500">
+            <Clock className="w-24 h-24 text-white" />
           </div>
-          <div className="z-10">
-            <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest bg-amber-50 dark:bg-amber-500/10 px-3 py-1 rounded-full">Focus Time</span>
+          <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-500" />
+          <div className="z-10 relative">
+            <span className="text-xs font-bold text-white uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm border border-white/10">Focus Time</span>
           </div>
-          <div className="z-10 space-y-1">
-            <p className="amita-bold text-4xl text-slate-800 dark:text-slate-100">
+          <div className="z-10 relative space-y-1">
+            <p className="amita-bold text-4xl text-white drop-shadow-sm">
               {totalFocusTime}
             </p>
-            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Logged this week</p>
+            <p className="text-sm text-amber-50 font-medium">Logged this week</p>
           </div>
         </Link>
 
-        <Link to="/notes" className="glass-card p-8 rounded-[2rem] flex flex-col justify-between group h-48 relative overflow-hidden">
-           <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
-            <FileText className="w-24 h-24 text-sky-500" />
+        <Link to="/notes" className="p-8 rounded-[2rem] bg-gradient-to-br from-sky-400 to-blue-600 text-white shadow-xl hover:shadow-sky-500/30 transition-all flex flex-col justify-between group h-48 relative overflow-hidden border border-white/10">
+           <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:scale-110 transition-transform duration-500">
+            <FileText className="w-24 h-24 text-white" />
           </div>
-          <div className="z-10">
-            <span className="text-xs font-bold text-sky-600 dark:text-sky-400 uppercase tracking-widest bg-sky-50 dark:bg-sky-500/10 px-3 py-1 rounded-full">Notes Library</span>
+          <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-500" />
+          <div className="z-10 relative">
+            <span className="text-xs font-bold text-white uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm border border-white/10">Notes Library</span>
           </div>
-          <div className="z-10 space-y-1">
-            <p className="amita-bold text-4xl text-slate-800 dark:text-slate-100">
+          <div className="z-10 relative space-y-1">
+            <p className="amita-bold text-4xl text-white drop-shadow-sm">
               {notes.length}
             </p>
-            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Saved documents</p>
+            <p className="text-sm text-sky-100 font-medium">Saved documents</p>
           </div>
         </Link>
 
-        <div className="glass-card p-8 rounded-[2rem] flex flex-col justify-between h-48 relative overflow-hidden">
-           <div className="absolute top-0 right-0 p-6 opacity-10">
-            <TrendingUp className="w-24 h-24 text-green-500" />
+        <div className="p-8 rounded-[2rem] bg-gradient-to-br from-green-400 to-emerald-600 text-white shadow-xl flex flex-col justify-between group h-48 relative overflow-hidden border border-white/10">
+           <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:scale-110 transition-transform duration-500">
+            <TrendingUp className="w-24 h-24 text-white" />
           </div>
-          <div className="z-10">
-            <span className="text-xs font-bold text-green-700 dark:text-green-400 uppercase tracking-widest bg-green-50 dark:bg-green-500/10 px-3 py-1 rounded-full">Mastery Rate</span>
+          <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-500" />
+          <div className="z-10 relative">
+            <span className="text-xs font-bold text-white uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm border border-white/10">Mastery Rate</span>
           </div>
-          <div className="z-10 space-y-1">
-            <p className="amita-bold text-4xl text-slate-800 dark:text-slate-100">
+          <div className="z-10 relative space-y-1">
+            <p className="amita-bold text-4xl text-white drop-shadow-sm">
               {flashcards.length > 0 
                 ? `${Math.round((flashcards.filter(f => f.isMastered).length / flashcards.length) * 100)}%`
                 : "0%"
               }
             </p>
-            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">High retention cards</p>
+            <p className="text-sm text-green-50 font-medium">High retention cards</p>
           </div>
         </div>
       </div>

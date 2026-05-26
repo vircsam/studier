@@ -44,24 +44,7 @@
   font-style: normal;
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply rounded-full transition-colors;
-  background: linear-gradient(180deg, rgba(96, 165, 250, 0.85), rgba(37, 99, 235, 0.85));
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, rgba(59, 130, 246, 0.95), rgba(29, 78, 216, 0.95));
-}
+/* Native scrollbars will be used instead of custom webkit overrides */
 
 /* Glassmorphism utilities */
 .glass-panel {
