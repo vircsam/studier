@@ -44,7 +44,7 @@ const PLANS = {
       { text: "Basic Pomodoro Timer", included: true },
       { text: "Standard Dashboard", included: true },
       { text: "Advanced Analytics", included: false },
-      { text: "AI Features", included: false },
+      { text: "Streaks & Focus Tracking", included: false },
     ],
   },
   Pro: {
@@ -67,8 +67,7 @@ const PLANS = {
       { text: "Up to 50 Notes", included: true },
       { text: "Auto Timetable Generation", included: true },
       { text: "Streaks & Focus Tracking", included: true },
-      { text: "Priority Email Support", included: true },
-      { text: "AI Features", included: false },
+      { text: "Basic Analytics", included: true },
     ],
   },
   Pinnacle: {
@@ -85,12 +84,11 @@ const PLANS = {
       "bg-gradient-to-r from-brand-500 to-brand-600 text-white hover:from-brand-600 hover:to-brand-700 shadow-lg shadow-brand-500/25 hover:shadow-brand-500/40 hover:scale-105 active:scale-95",
     buttonText: "Go Pinnacle",
     features: [
-      { text: "Unlimited Flashcards", included: true },
-      { text: "Unlimited Notes", included: true },
+      { text: "More Flashcards", included: true },
+      { text: "More Notes", included: true },
       { text: "Everything in Pro", included: true },
-      { text: "AI-Powered Features", included: true },
       { text: "Advanced Analytics", included: true },
-      { text: "Priority Support", included: true },
+      { text: "Instant Updates", included: true },
     ],
   },
 };
@@ -502,7 +500,7 @@ export default function Pricing() {
             </div>
           </div>
           <p className="text-sm text-slate-400 font-medium">
-            Payments securely processed by Razorpay. Cancel your subscription anytime from your dashboard.
+            Cancel your subscription anytime. No Refunds.
           </p>
         </motion.div>
       </motion.section>
