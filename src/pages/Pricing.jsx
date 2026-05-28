@@ -31,12 +31,12 @@ const PLANS = {
     period: "/mo",
     tagline: "Essential tools to get started",
     icon: Zap,
-    gradient: "from-slate-50 to-slate-100",
-    border: "border-slate-200",
-    iconBg: "bg-slate-100",
+    gradient: "from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900",
+    border: "border-slate-200 dark:border-slate-700",
+    iconBg: "bg-slate-100 dark:bg-slate-800",
     iconColor: "text-slate-500",
     buttonStyle:
-      "border-2 border-slate-200 text-slate-600 hover:border-slate-400 hover:text-slate-800 hover:bg-slate-50",
+      "border-2 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700",
     buttonText: "Current Plan",
     features: [
       { text: "Up to 10 Flashcards", included: true },
@@ -240,7 +240,7 @@ export default function Pricing() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden font-sans bg-white">
+    <div className="relative min-h-screen overflow-x-hidden font-sans bg-white dark:bg-slate-950">
       {/* Decorative background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute top-[-5%] left-[-10%] w-[500px] h-[500px] rounded-full bg-brand-300/20 blur-[150px]" />
@@ -252,7 +252,7 @@ export default function Pricing() {
       <div className="relative z-10 max-w-7xl mx-auto px-6 pt-8">
         <button
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-brand-600 transition-colors group"
+          className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-brand-600 transition-colors group"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           Back
@@ -267,14 +267,14 @@ export default function Pricing() {
         className="relative z-10 px-6 pt-8 pb-6 max-w-7xl mx-auto text-center"
       >
         <motion.div variants={itemVariants} className="space-y-4 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold bg-brand-50 text-brand-600 border border-brand-100">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold bg-brand-50 dark:bg-brand-950/30 text-brand-600 dark:text-brand-400 border border-brand-100 dark:border-brand-800">
             <Shield className="w-4 h-4" />
             Secure Payments via Razorpay
           </div>
-          <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-800">
+          <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-800 dark:text-white">
             Invest in your grades.
           </h1>
-          <p className="text-xl text-slate-500 font-medium">
+          <p className="text-xl text-slate-500 dark:text-slate-400 font-medium">
             Unlock the full power of the Studier ecosystem. Cancel anytime.
           </p>
         </motion.div>
@@ -287,15 +287,15 @@ export default function Pricing() {
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider">
             <CreditCard className="w-4 h-4" /> Cards
           </div>
-          <div className="w-px h-4 bg-slate-200" />
+          <div className="w-px h-4 bg-slate-200 dark:bg-slate-700" />
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider">
             <Smartphone className="w-4 h-4" /> UPI
           </div>
-          <div className="w-px h-4 bg-slate-200" />
+          <div className="w-px h-4 bg-slate-200 dark:bg-slate-700" />
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider">
             <Building2 className="w-4 h-4" /> Net Banking
           </div>
-          <div className="w-px h-4 bg-slate-200" />
+          <div className="w-px h-4 bg-slate-200 dark:bg-slate-700" />
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider">
             <Wallet className="w-4 h-4" /> Wallets
           </div>
@@ -323,7 +323,7 @@ export default function Pricing() {
                 whileHover={isUpgrade ? { y: -8, scale: 1.02 } : {}}
                 className={`relative rounded-[2.5rem] overflow-hidden transition-all ${
                   plan.featured ? "md:-translate-y-6" : ""
-                } ${isCurrent ? "ring-2 ring-brand-400/50 ring-offset-4 ring-offset-white" : ""}`}
+                } ${isCurrent ? "ring-2 ring-brand-400/50 ring-offset-4 ring-offset-white dark:ring-offset-slate-950" : ""}`}
               >
                 {/* Featured badge */}
                 {plan.badge && (
@@ -337,7 +337,7 @@ export default function Pricing() {
                 {/* Current plan indicator */}
                 {isCurrent && (
                   <div className="absolute top-5 right-5 z-20">
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand-50 border border-brand-200 text-brand-600 text-xs font-bold">
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand-50 dark:bg-brand-950/40 border border-brand-200 dark:border-brand-800 text-brand-600 dark:text-brand-400 text-xs font-bold">
                       <div className="w-2 h-2 rounded-full bg-brand-500 animate-pulse" />
                       Active
                     </div>
@@ -359,7 +359,7 @@ export default function Pricing() {
                       className={`text-2xl font-bold mb-1 ${
                         plan.featured || plan.name === "Pinnacle"
                           ? "text-white"
-                          : "text-slate-800"
+                          : "text-slate-800 dark:text-white"
                       }`}
                     >
                       {plan.name}
@@ -370,7 +370,7 @@ export default function Pricing() {
                           ? "text-brand-100"
                           : plan.name === "Pinnacle"
                           ? "text-slate-400"
-                          : "text-slate-500"
+                          : "text-slate-500 dark:text-slate-400"
                       }`}
                     >
                       {plan.tagline}
@@ -383,7 +383,7 @@ export default function Pricing() {
                       className={`text-5xl font-black ${
                         plan.featured || plan.name === "Pinnacle"
                           ? "text-white"
-                          : "text-slate-800"
+                          : "text-slate-800 dark:text-white"
                       }`}
                     >
                       ₹{plan.price}
@@ -423,10 +423,10 @@ export default function Pricing() {
                           !feature.included
                             ? plan.featured || plan.name === "Pinnacle"
                               ? "text-white/30"
-                              : "text-slate-300"
+                              : "text-slate-300 dark:text-slate-600"
                             : plan.featured || plan.name === "Pinnacle"
                             ? "text-white"
-                            : "text-slate-700"
+                            : "text-slate-700 dark:text-slate-200"
                         }`}
                       >
                         <CheckCircle2
