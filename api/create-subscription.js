@@ -47,10 +47,20 @@ export default async function handler(req, res) {
       });
     }
 
+    // --- Validate Razorpay credentials ---
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!keyId || !keySecret) {
+      console.error("RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET is not set.");
+      return res.status(500).json({
+        error: "Payment gateway is not configured. Please contact support.",
+      });
+    }
+
     // --- Create Razorpay subscription ---
     const razorpay = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_KEY_SECRET,
+      key_id: keyId,
+      key_secret: keySecret,
     });
 
     const subscription = await razorpay.subscriptions.create({
@@ -64,12 +74,13 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       subscriptionId: subscription.id,
-      key: process.env.RAZORPAY_KEY_ID,
+      key: keyId,
     });
   } catch (error) {
-    console.error("create-subscription error:", error);
+    const errMsg = error?.message || error?.description || (typeof error === 'string' ? error : JSON.stringify(error));
+    console.error("create-subscription error:", errMsg, error);
     return res.status(500).json({
-      error: "Failed to create subscription: " + error.message,
+      error: "Failed to create subscription: " + (errMsg || "Unknown server error. Check Vercel function logs."),
     });
   }
 }
