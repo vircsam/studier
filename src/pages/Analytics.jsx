@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useFirestore } from "../hooks/useFirestore";
 import { useToast } from "../context/ToastContext";
 import { useStore } from "../store/useStore";
@@ -12,6 +13,7 @@ import {
 } from "recharts";
 
 export default function Analytics() {
+  const navigate = useNavigate();
   const { studySessions, flashcards, streak, productivityScore } = useFirestore();
   const { showToast } = useToast();
   const user = useStore(state => state.user);
@@ -112,7 +114,7 @@ export default function Analytics() {
           The Free plan does not include Advanced Analytics. Upgrade to Pro to unlock deep-dive performance evaluations, strengths breakdowns, productivity tracking, and AI insights.
         </p>
         <button 
-          onClick={() => window.location.href="/#pricing"}
+          onClick={() => navigate("/pricing")}
           className="mt-4 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-brand-500 to-indigo-600 hover:from-brand-600 hover:to-indigo-700 text-white font-bold shadow-xl shadow-brand-500/30 transition-all cursor-pointer"
         >
           Upgrade to Pro
