@@ -18,9 +18,11 @@ export default function AppLayout({ children, title }) {
   useEffect(() => {
     // Protected routes redirection
     if (!isAuthLoading) {
-      const publicPaths = ["/", "/login"];
+      const publicPaths = ["/", "/login", "/pricing"];
       if (!user && !publicPaths.includes(location.pathname)) {
         navigate("/");
+      } else if (!user && location.pathname === "/pricing") {
+        navigate("/login");
       } else if (user && (location.pathname === "/login" || location.pathname === "/")) {
         navigate("/dashboard");
       }

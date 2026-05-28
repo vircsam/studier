@@ -45,7 +45,7 @@ export const ToastProvider = ({ children }) => {
   };
 
   return (
-    <ToastContext.Provider value={{ showToast: addToast }}>
+    <ToastContext.Provider value={{ addToast }}>
       {children}
       {/* Toast Portal Container */}
       <div className="fixed bottom-5 right-5 z-[999] flex flex-col gap-2 max-w-md w-full sm:w-[350px]">

@@ -431,7 +431,7 @@ export default function Landing() {
                 <li className="flex items-start gap-3 text-white font-medium"><CheckCircle2 className="w-6 h-6 text-green-400 shrink-0" /> Streaks & Focus Tracking</li>
                 <li className="flex items-start gap-3 text-white font-medium"><CheckCircle2 className="w-6 h-6 text-green-400 shrink-0" /> Priority Email Support</li>
               </ul>
-              <Link to="/login" className="w-full py-4 px-6 rounded-2xl font-black text-center bg-white text-brand-600 hover:bg-brand-50 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-brand-900/20">Upgrade to Pro</Link>
+              <Link to="/pricing" className="w-full py-4 px-6 rounded-2xl font-black text-center bg-white text-brand-600 hover:bg-brand-50 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-brand-900/20">Upgrade to Pro</Link>
             </div>
 
             {/* Pinnacle Plan */}
@@ -445,7 +445,7 @@ export default function Landing() {
                 <li className="flex items-start gap-3 text-slate-200 font-medium"><CheckCircle2 className="w-6 h-6 text-brand-500 shrink-0" /> Everything in Pro</li>
                 <li className="flex items-start gap-3 text-slate-200 font-medium"><CheckCircle2 className="w-6 h-6 text-brand-500 shrink-0" /> AI features</li>
               </ul>
-              <Link to="/login" className="w-full py-4 px-6 rounded-2xl font-bold text-center bg-brand-600 text-white hover:bg-brand-500 transition-colors">Go Pinnacle</Link>
+              <Link to="/pricing" className="w-full py-4 px-6 rounded-2xl font-bold text-center bg-brand-600 text-white hover:bg-brand-500 transition-colors">Go Pinnacle</Link>
             </div>
           </div>
         </section>

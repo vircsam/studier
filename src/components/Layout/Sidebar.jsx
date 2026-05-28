@@ -16,8 +16,17 @@ import {
   Moon, 
   X,
   Award,
-  Sparkles
+  Sparkles,
+  CreditCard,
+  Crown,
+  Zap
 } from "lucide-react";
+
+const PLAN_META = {
+  Free:     { label: "Free",     icon: Zap,    color: "text-slate-500",  bg: "bg-slate-100 dark:bg-slate-800",    border: "border-slate-200 dark:border-slate-700" },
+  Pro:      { label: "Pro",      icon: Crown,  color: "text-brand-600",  bg: "bg-brand-50 dark:bg-brand-950/40",  border: "border-brand-200 dark:border-brand-800" },
+  Pinnacle: { label: "Pinnacle", icon: Sparkles,color: "text-purple-600",bg: "bg-purple-50 dark:bg-purple-950/40",border: "border-purple-200 dark:border-purple-800" },
+};
 
 export default function Sidebar({ isOpen, onClose }) {
   const { user, logout } = useAuth();
@@ -113,6 +122,31 @@ export default function Sidebar({ isOpen, onClose }) {
               </Link>
             );
           })}
+
+          {/* Plan badge + upgrade CTA */}
+          {user && (() => {
+            const plan = user.plan || "Free";
+            const meta = PLAN_META[plan] || PLAN_META.Free;
+            const PlanIcon = meta.icon;
+            return (
+              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-xl ${meta.bg} border ${meta.border} mb-2`}>
+                  <PlanIcon className={`w-4 h-4 ${meta.color}`} />
+                  <span className={`text-xs font-bold ${meta.color}`}>{meta.label} Plan</span>
+                </div>
+                {plan !== "Pinnacle" && (
+                  <Link
+                    to="/pricing"
+                    onClick={onClose}
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 shadow-sm shadow-brand-500/20 transition-all hover:-translate-y-0.5"
+                  >
+                    <CreditCard className="w-4 h-4" />
+                    Upgrade Plan
+                  </Link>
+                )}
+              </div>
+            );
+          })()}
         </nav>
 
         {/* User Info / Footer */}

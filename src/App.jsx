@@ -13,6 +13,7 @@ const Timeline = lazy(() => import("./pages/Timeline"));
 const Notes = lazy(() => import("./pages/Notes"));
 const Focus = lazy(() => import("./pages/Focus"));
 const Analytics = lazy(() => import("./pages/Analytics"));
+const Pricing = lazy(() => import("./pages/Pricing"));
 
 // Compact, beautiful loader for lazy loaded pages
 const PageLoader = () => (
@@ -99,6 +100,14 @@ function App() {
               element={
                 <AppLayout title="Study Analytics">
                   <Analytics />
+                </AppLayout>
+              } 
+            />
+            <Route 
+              path="/pricing" 
+              element={
+                <AppLayout title="Pricing Plans">
+                  <Pricing />
                 </AppLayout>
               } 
             />

@@ -31,6 +31,12 @@ import {
   dbToggleCalendarEvent,
   dbUpdateUserPlan
 } from "../services/db";
+import {
+  createSubscription,
+  verifyPayment,
+  openCheckout,
+  loadRazorpayScript
+} from "../services/razorpayService";
 
 // Helper to generate IDs
 const generateId = () => Math.random().toString(36).substring(2, 9);
@@ -53,6 +59,11 @@ export const useStore = create((set, get) => ({
   isMockMode: false,
   streak: 1,
   productivityScore: 60,
+
+  // Payment State
+  paymentStatus: null, // null | 'processing' | 'success' | 'failed'
+  paymentError: null,
+  selectedPlan: null,
 
   // Timer State
   focusMode: "focus",
@@ -87,6 +98,60 @@ export const useStore = create((set, get) => ({
     if (!user) return;
     await dbUpdateUserPlan(user.uid, newPlan);
     set({ user: { ...user, plan: newPlan } });
+  },
+
+  // Payment Actions
+  clearPaymentStatus: () => set({ paymentStatus: null, paymentError: null, selectedPlan: null }),
+
+  initiatePayment: async (planName) => {
+    const { user } = get();
+    if (!user) return;
+
+    set({ selectedPlan: planName, paymentStatus: null, paymentError: null });
+
+    try {
+      // 1. Preload Razorpay SDK
+      const loaded = await loadRazorpayScript();
+      if (!loaded) throw new Error("Failed to load payment gateway.");
+
+      // 2. Create subscription on backend
+      const { subscriptionId } = await createSubscription(planName, user.uid, user.email);
+
+      // 3. Open Razorpay Checkout
+      await openCheckout({
+        subscriptionId,
+        planName,
+        userName: user.displayName || user.name,
+        userEmail: user.email,
+        onSuccess: async (response) => {
+          set({ paymentStatus: "processing" });
+          try {
+            await verifyPayment({
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_subscription_id: response.razorpay_subscription_id,
+              razorpay_signature: response.razorpay_signature,
+              userId: user.uid,
+              planName,
+            });
+            await dbUpdateUserPlan(user.uid, planName);
+            set({
+              user: { ...get().user, plan: planName },
+              paymentStatus: "success",
+            });
+          } catch (err) {
+            set({ paymentStatus: "failed", paymentError: err.message });
+          }
+        },
+        onFailure: (err) => {
+          set({ paymentStatus: "failed", paymentError: err.description || "Payment failed" });
+        },
+        onDismiss: () => {
+          set({ selectedPlan: null });
+        },
+      });
+    } catch (err) {
+      set({ paymentStatus: "failed", paymentError: err.message });
+    }
   },
 
   // Theme Actions

@@ -3,9 +3,13 @@ import react from '@vitejs/plugin-react'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import dotenv from 'dotenv'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+
+// Load ALL .env variables into process.env (Vite only loads VITE_* for the frontend)
+dotenv.config({ path: path.resolve(__dirname, '.env') })
 
 // Custom middleware to serve Vercel serverless functions locally under Vite
 const apiMiddleware = () => ({
