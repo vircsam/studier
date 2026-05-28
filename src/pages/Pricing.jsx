@@ -114,7 +114,7 @@ const itemVariants = {
 
 export default function Pricing() {
   const navigate = useNavigate();
-  const { addToast } = useToast();
+  const { showToast } = useToast();
   const user = useStore((s) => s.user);
   const upgradePlan = useStore((s) => s.upgradePlan);
 
@@ -182,7 +182,7 @@ export default function Pricing() {
               // 5. Update local state
               await upgradePlan(planName);
               setPaymentStatus("success");
-              addToast(`🎉 Welcome to ${planName}! Your plan is now active.`, "success");
+              showToast(`🎉 Welcome to ${planName}! Your plan is now active.`, "success");
             } catch (verifyErr) {
               console.error("Payment verification failed:", verifyErr);
               setPaymentStatus("failed");
@@ -209,7 +209,7 @@ export default function Pricing() {
         setIsLoading(null);
       }
     },
-    [user, canUpgrade, navigate, upgradePlan, addToast]
+    [user, canUpgrade, navigate, upgradePlan, showToast]
   );
 
   // Retry handler

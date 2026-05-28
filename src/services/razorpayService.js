@@ -37,7 +37,16 @@ export async function createSubscription(planName, userId, userEmail) {
     body: JSON.stringify({ planName, userId, userEmail }),
   });
 
-  const data = await response.json();
+  if (response.status === 503) {
+    throw new Error("Payment service is temporarily unavailable. Please try again in a few moments.");
+  }
+
+  let data;
+  try {
+    data = await response.json();
+  } catch {
+    throw new Error(`Server returned status ${response.status}. Please try again later.`);
+  }
 
   if (!response.ok || !data.success) {
     throw new Error(data.error || "Failed to create subscription");
