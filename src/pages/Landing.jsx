@@ -361,7 +361,7 @@ export default function Landing() {
           <div className="absolute top-0 right-0 bottom-0 w-32 bg-gradient-to-l from-slate-50/50 to-transparent z-10 pointer-events-none" />
           
           <div className="text-center max-w-3xl mx-auto mb-16 px-6">
-            <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-800">Loved by 10,000+ Students</h2>
+            <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-800">Loved by Students</h2>
             <p className="text-lg text-slate-500 font-medium mt-4">Don't just take our word for it. Join the top 1%.</p>
           </div>
 
